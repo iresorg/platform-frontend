@@ -16,8 +16,22 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useEscalateCaseMutation } from "@/lib/cases/queries";
 
-export function EscalateDialog({ caseId }: { caseId: string }) {
-  const [open, setOpen] = useState(false);
+export function EscalateDialog({
+  caseId,
+  caseTitle,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
+  showTrigger = true,
+}: {
+  caseId: string;
+  caseTitle?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
+}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = setControlledOpen ?? setInternalOpen;
   const [reason, setReason] = useState("");
   const escalateMutation = useEscalateCaseMutation();
 
@@ -39,16 +53,20 @@ export function EscalateDialog({ caseId }: { caseId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="destructive" className="w-full">
-          Escalate
-        </Button>
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <Button variant="destructive" className="w-full">
+            Escalate
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Escalate to senior lead</DialogTitle>
           <DialogDescription>
-            This notifies the senior lead and marks the case as escalated.
+            {caseTitle
+              ? `Escalating "${caseTitle}". This notifies the senior lead and marks the case as escalated.`
+              : "This notifies the senior lead and marks the case as escalated."}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-1.5">
@@ -59,6 +77,7 @@ export function EscalateDialog({ caseId }: { caseId: string }) {
             onChange={(e) => setReason(e.target.value)}
             placeholder="Why does this case need senior lead attention?"
             rows={4}
+            autoFocus
           />
         </div>
         <DialogFooter>

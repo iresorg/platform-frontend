@@ -16,5 +16,9 @@ const TONES: Record<CaseStatus, BadgeTone> = {
 };
 
 export function CustomerStatusBadge({ status }: { status: CaseStatus }) {
-  return <ColorBadge tone={TONES[status]}>{LABELS[status]}</ColorBadge>;
+  return (
+    <ColorBadge tone={TONES[status]} variant="outline">
+      {LABELS[status]}
+    </ColorBadge>
+  );
 }

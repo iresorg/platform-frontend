@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, ChevronRight } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "cn";
+import { useAuth } from "@/components/auth/auth-provider";
+import { EscalateDialog } from "@/components/cases/escalate-dialog";
 import { SeverityIndicator } from "@/components/cases/severity-indicator";
 import { SlaBadge } from "@/components/cases/sla-badge";
 import { StatusBadge } from "@/components/cases/status-badge";
@@ -26,8 +29,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useNow } from "@/hooks/use-now";
-import { useCasesQuery } from "@/lib/cases/queries";
-import type { CaseStatus } from "@/lib/cases/types";
+import { useAssignCaseMutation, useCasesQuery } from "@/lib/cases/queries";
+import type { Case, CaseStatus } from "@/lib/cases/types";
 
 type SortKey = "severity" | "sla";
 
@@ -50,6 +53,8 @@ const STATUS_OPTIONS: { value: CaseStatus | "all"; label: string }[] = [
   { value: "escalated", label: "Escalated" },
   { value: "resolved", label: "Resolved" },
 ];
+
+const EDITABLE_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
 
 function SortToggle({
   sortKey,
@@ -93,13 +98,17 @@ function SortToggle({
 export function TriageQueue() {
   const router = useRouter();
   const now = useNow();
+  const { user } = useAuth();
   const { data: cases, isLoading } = useCasesQuery();
+  const assignMutation = useAssignCaseMutation();
 
   const [status, setStatus] = useState<CaseStatus | "all">("all");
   const [customerId, setCustomerId] = useState<string>("all");
   const [severityMin, setSeverityMin] = useState("");
   const [severityMax, setSeverityMax] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("sla");
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [escalateTarget, setEscalateTarget] = useState<Case | null>(null);
 
   const customers = useMemo(() => {
     const map = new Map<string, string>();
@@ -132,6 +141,75 @@ export function TriageQueue() {
     });
     return copy;
   }, [filtered, sortKey]);
+
+  // Derived rather than synced via effect: clamps automatically when the
+  // filtered/sorted list shrinks out from under the current selection.
+  const clampedIndex =
+    selectedIndex === null || sorted.length === 0
+      ? null
+      : Math.min(selectedIndex, sorted.length - 1);
+
+  useEffect(() => {
+    if (clampedIndex === null) return;
+    document
+      .querySelector(`[data-row-index="${clampedIndex}"]`)
+      ?.scrollIntoView({ block: "nearest" });
+  }, [clampedIndex]);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const active = document.activeElement;
+      if (
+        active &&
+        (EDITABLE_TAGS.has(active.tagName) ||
+          (active as HTMLElement).isContentEditable)
+      ) {
+        return;
+      }
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      if (sorted.length === 0) return;
+
+      if (event.key === "j") {
+        event.preventDefault();
+        setSelectedIndex((i) =>
+          i === null ? 0 : Math.min(i + 1, sorted.length - 1)
+        );
+        return;
+      }
+      if (event.key === "k") {
+        event.preventDefault();
+        setSelectedIndex((i) => (i === null ? 0 : Math.max(i - 1, 0)));
+        return;
+      }
+
+      if (selectedIndex === null) return;
+      const selected = sorted[selectedIndex];
+      if (!selected) return;
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        router.push(`/cases/${selected.id}`);
+      } else if (event.key === "a") {
+        event.preventDefault();
+        if (!user) return;
+        if (selected.assigned_analyst?.id === user.id) return;
+        assignMutation.mutate(
+          { id: selected.id, analyst: { id: user.id, name: user.name } },
+          {
+            onSuccess: () => toast.success(`Assigned "${selected.title}" to you.`),
+            onError: () => toast.error("Failed to assign case."),
+          }
+        );
+      } else if (event.key === "e") {
+        event.preventDefault();
+        if (selected.status === "resolved") return;
+        setEscalateTarget(selected);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [sorted, selectedIndex, user, assignMutation, router]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -188,7 +266,16 @@ export function TriageQueue() {
           </div>
         </div>
 
-        <SortToggle sortKey={sortKey} onChange={setSortKey} />
+        <div className="flex items-center gap-4">
+          <p className="hidden font-mono text-xs text-muted-foreground lg:block">
+            <kbd className="rounded border border-border px-1">j</kbd>/
+            <kbd className="rounded border border-border px-1">k</kbd> move ·{" "}
+            <kbd className="rounded border border-border px-1">↵</kbd> open ·{" "}
+            <kbd className="rounded border border-border px-1">a</kbd> assign ·{" "}
+            <kbd className="rounded border border-border px-1">e</kbd> escalate
+          </p>
+          <SortToggle sortKey={sortKey} onChange={setSortKey} />
+        </div>
       </div>
 
       <div
@@ -255,8 +342,16 @@ export function TriageQueue() {
               {sorted.map((c, index) => (
                 <TableRow
                   key={c.id}
-                  className="cursor-pointer transition-colors hover:bg-muted/40"
-                  onClick={() => router.push(`/cases/${c.id}`)}
+                  data-row-index={index}
+                  className={cn(
+                    "cursor-pointer transition-colors hover:bg-muted/40",
+                    index === clampedIndex &&
+                      "bg-accent/60 ring-1 ring-inset ring-primary/50 hover:bg-accent/60"
+                  )}
+                  onClick={() => {
+                    setSelectedIndex(index);
+                    router.push(`/cases/${c.id}`);
+                  }}
                 >
                   <TableCell className="text-sm text-muted-foreground tabular-nums">
                     {index + 1}
@@ -304,6 +399,18 @@ export function TriageQueue() {
           </Table>
         </div>
       </div>
+
+      {escalateTarget && (
+        <EscalateDialog
+          caseId={escalateTarget.id}
+          caseTitle={escalateTarget.title}
+          open={!!escalateTarget}
+          onOpenChange={(open) => {
+            if (!open) setEscalateTarget(null);
+          }}
+          showTrigger={false}
+        />
+      )}
     </div>
   );
 }

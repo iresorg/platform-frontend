@@ -129,7 +129,7 @@ export function ActionsPanel({ caseData }: { caseData: Case }) {
           {!isResolved && (
             <>
               <Separator />
-              <VerdictDialog caseId={caseData.id} />
+              <VerdictDialog caseId={caseData.id} caseTitle={caseData.title} />
             </>
           )}
         </div>

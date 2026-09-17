@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -43,7 +43,25 @@ const CLASSIFICATION_OPTIONS: {
   { value: "benign", label: "Benign" },
 ];
 
-export function VerdictDialog({ caseId }: { caseId: string }) {
+// Pre-fills customer guidance by classification — the analyst edits from
+// here rather than writing from a blank field. This is the single biggest
+// lever on portal output quality: most guidance ends up close to these.
+const GUIDANCE_TEMPLATES: Record<VerdictClassification, string> = {
+  true_positive:
+    "We confirmed malicious activity related to this alert and have taken action to contain and remediate it. We recommend you reset credentials for any affected accounts and let us know if you notice anything unusual.",
+  false_positive:
+    "We investigated this alert and confirmed it was not malicious activity. No action is required on your part.",
+  benign:
+    "This alert was triggered by expected, authorized activity and does not indicate any security risk. No action is required.",
+};
+
+export function VerdictDialog({
+  caseId,
+  caseTitle,
+}: {
+  caseId: string;
+  caseTitle: string;
+}) {
   const [open, setOpen] = useState(false);
   const submitVerdictMutation = useSubmitVerdictMutation();
 
@@ -53,13 +71,26 @@ export function VerdictDialog({ caseId }: { caseId: string }) {
     control,
     setValue,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, dirtyFields },
   } = useForm<VerdictFormValues>({
     resolver: zodResolver(verdictSchema),
     defaultValues: { notes: "", customer_guidance: "" },
   });
 
   const classification = useWatch({ control, name: "classification" });
+  const customerGuidance = useWatch({ control, name: "customer_guidance" });
+
+  useEffect(() => {
+    if (!classification) return;
+    // setValue without shouldDirty leaves dirtyFields untouched, so this
+    // only fills fields the analyst hasn't actually typed into yet.
+    if (!dirtyFields.customer_guidance) {
+      setValue("customer_guidance", GUIDANCE_TEMPLATES[classification], {
+        shouldValidate: true,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classification]);
 
   function onSubmit(values: VerdictFormValues) {
     submitVerdictMutation.mutate(
@@ -82,7 +113,7 @@ export function VerdictDialog({ caseId }: { caseId: string }) {
       <DialogTrigger asChild>
         <Button>Submit verdict &amp; close case</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Submit verdict</DialogTitle>
           <DialogDescription>
@@ -129,6 +160,12 @@ export function VerdictDialog({ caseId }: { caseId: string }) {
                 {errors.classification.message}
               </p>
             )}
+            {classification && (
+              <p className="text-xs text-muted-foreground">
+                Customer guidance below was pre-filled for this
+                classification — edit freely.
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -152,7 +189,7 @@ export function VerdictDialog({ caseId }: { caseId: string }) {
             <Label htmlFor="verdict-guidance">Customer guidance</Label>
             <Textarea
               id="verdict-guidance"
-              rows={3}
+              rows={4}
               placeholder="Plain-language advice visible in the customer portal."
               aria-invalid={!!errors.customer_guidance}
               aria-describedby={
@@ -168,6 +205,18 @@ export function VerdictDialog({ caseId }: { caseId: string }) {
                 {errors.customer_guidance.message}
               </p>
             )}
+          </div>
+
+          <div className="rounded-lg border border-dashed border-border bg-muted/40 p-3.5">
+            <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">
+              What the client will see
+            </p>
+            <div className="rounded-lg border border-border bg-card p-3">
+              <p className="text-sm font-medium">{caseTitle}</p>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                {customerGuidance || "Their guidance will appear here as you type."}
+              </p>
+            </div>
           </div>
 
           <DialogFooter>

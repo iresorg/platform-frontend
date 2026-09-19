@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { ActionsPanel } from "@/components/cases/actions-panel";
+import { InvestigationView } from "@/components/cases/investigation-view";
+import { RiskBadge } from "@/components/cases/risk-badge";
 import { SeverityBadge } from "@/components/cases/severity-badge";
 import { SlaBadge } from "@/components/cases/sla-badge";
 import { StatusBadge } from "@/components/cases/status-badge";
@@ -9,7 +12,15 @@ import { TelemetryPanel } from "@/components/cases/telemetry-panel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNow } from "@/hooks/use-now";
-import { useCaseQuery } from "@/lib/cases/queries";
+import { useCaseQuery, useCasesQuery } from "@/lib/cases/queries";
+import { cn } from "cn";
+
+type WorkspaceTab = "overview" | "investigation";
+
+const TABS: { key: WorkspaceTab; label: string }[] = [
+  { key: "overview", label: "Overview" },
+  { key: "investigation", label: "Investigation" },
+];
 
 function formatOpened(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
@@ -23,6 +34,8 @@ function formatOpened(iso: string): string {
 export function CaseWorkspace({ caseId }: { caseId: string }) {
   const now = useNow();
   const { data: caseData, isLoading, isError } = useCaseQuery(caseId);
+  const { data: allCases } = useCasesQuery();
+  const [tab, setTab] = useState<WorkspaceTab>("overview");
 
   if (isLoading) {
     return (
@@ -59,6 +72,7 @@ export function CaseWorkspace({ caseId }: { caseId: string }) {
 
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
+          <RiskBadge riskScore={caseData.risk_score} />
           <SeverityBadge severity={caseData.severity} />
           <StatusBadge status={caseData.status} />
           {caseData.status !== "resolved" && (
@@ -87,8 +101,31 @@ export function CaseWorkspace({ caseId }: { caseId: string }) {
         </div>
       )}
 
+      <div className="inline-flex w-fit items-center rounded-lg border border-border bg-muted p-0.5">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            aria-pressed={tab === t.key}
+            onClick={() => setTab(t.key)}
+            className={cn(
+              "cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              tab === t.key
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px]">
-        <TelemetryPanel caseData={caseData} />
+        {tab === "overview" ? (
+          <TelemetryPanel caseData={caseData} />
+        ) : (
+          <InvestigationView caseData={caseData} allCases={allCases ?? []} />
+        )}
         <ActionsPanel caseData={caseData} />
       </div>
     </div>

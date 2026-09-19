@@ -1,11 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Download, Mail, Phone } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { CustomerStatusBadge } from "@/components/portal/customer-status-badge";
+import { EndpointHealthCard } from "@/components/portal/endpoint-health-card";
 import { PortalStats } from "@/components/portal/portal-stats";
 import { SecurityBanner } from "@/components/portal/security-banner";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -16,7 +18,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useNow } from "@/hooks/use-now";
+import { downloadCasesCsv } from "@/lib/cases/export-csv";
 import { useCustomerCasesQuery } from "@/lib/cases/queries";
+import { useCustomerEndpointsQuery } from "@/lib/endpoints/queries";
 
 function formatTime(iso: string): string {
   return `${new Date(iso).toLocaleTimeString(undefined, {
@@ -31,6 +35,8 @@ export default function PortalPage() {
   const now = useNow();
   const customerId = user?.customer_id ?? "";
   const { data: cases, isLoading } = useCustomerCasesQuery(customerId);
+  const { data: endpoints, isLoading: endpointsLoading } =
+    useCustomerEndpointsQuery(customerId);
 
   const sorted = [...(cases ?? [])].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -55,11 +61,22 @@ export default function PortalPage() {
       )}
 
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-        <div className="border-b border-border px-5 py-4">
-          <h2 className="font-heading font-bold">Recent incidents</h2>
-          <p className="text-sm text-muted-foreground">
-            Plain-language summaries from your security team
-          </p>
+        <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+          <div>
+            <h2 className="font-heading font-bold">Recent incidents</h2>
+            <p className="text-sm text-muted-foreground">
+              Plain-language summaries from your security team
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={sorted.length === 0}
+            onClick={() => downloadCasesCsv(sorted)}
+          >
+            <Download className="size-4" aria-hidden="true" />
+            Export CSV
+          </Button>
         </div>
 
         <div className="overflow-x-auto">
@@ -142,6 +159,35 @@ export default function PortalPage() {
             are not shown in this portal.
           </p>
           <p>Contact your service manager if you need the full forensic record.</p>
+        </div>
+      </div>
+
+      {endpointsLoading ? (
+        <Skeleton className="h-40 w-full rounded-xl" />
+      ) : (
+        (endpoints?.length ?? 0) > 0 && <EndpointHealthCard endpoints={endpoints ?? []} />
+      )}
+
+      <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+        <h2 className="font-heading font-bold">Need help?</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your SOC team is monitoring around the clock. Reach out any time.
+        </p>
+        <div className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:gap-6">
+          <a
+            href="mailto:soc@ires.com"
+            className="flex items-center gap-2 font-medium text-brand-navy hover:underline dark:text-[#8b8fe8]"
+          >
+            <Mail className="size-4" aria-hidden="true" />
+            soc@ires.com
+          </a>
+          <a
+            href="tel:+18005550199"
+            className="flex items-center gap-2 font-medium text-brand-navy hover:underline dark:text-[#8b8fe8]"
+          >
+            <Phone className="size-4" aria-hidden="true" />
+            +1 (800) 555-0199
+          </a>
         </div>
       </div>
     </div>

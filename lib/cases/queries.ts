@@ -24,9 +24,14 @@ import type {
   CaseFilters,
   CaseVerdict,
 } from "@/lib/cases/types";
+import { CASE_POLL_INTERVAL_MS, REALTIME_MODE } from "@/lib/config";
 
-// Poll GET /cases every 20s (spec allows 15-30s). No WebSockets for MVP.
-const CASE_POLL_INTERVAL_MS = 20_000;
+// REALTIME_MODE === "poll": refetch on an interval (spec allows 15-30s).
+// REALTIME_MODE === "push": disable interval refetch — a WebSocket/SSE
+// subscription (wired up wherever a live endpoint exists) is expected to
+// call queryClient.invalidateQueries() instead. See lib/config.ts.
+const POLL_REFETCH_INTERVAL =
+  REALTIME_MODE === "poll" ? CASE_POLL_INTERVAL_MS : false;
 
 export const caseKeys = {
   all: ["cases"] as const,
@@ -42,7 +47,7 @@ export function useCasesQuery(filters?: CaseFilters) {
   return useQuery({
     queryKey: caseKeys.list(filters),
     queryFn: () => fetchCases(filters),
-    refetchInterval: CASE_POLL_INTERVAL_MS,
+    refetchInterval: POLL_REFETCH_INTERVAL,
   });
 }
 
@@ -50,7 +55,7 @@ export function useCaseQuery(id: string) {
   return useQuery({
     queryKey: caseKeys.detail(id),
     queryFn: () => fetchCase(id),
-    refetchInterval: CASE_POLL_INTERVAL_MS,
+    refetchInterval: POLL_REFETCH_INTERVAL,
   });
 }
 
@@ -58,7 +63,7 @@ export function useCaseEventsQuery(id: string) {
   return useQuery({
     queryKey: caseKeys.events(id),
     queryFn: () => fetchCaseEvents(id),
-    refetchInterval: CASE_POLL_INTERVAL_MS,
+    refetchInterval: POLL_REFETCH_INTERVAL,
   });
 }
 
@@ -66,7 +71,7 @@ export function useCustomerCasesQuery(customerId: string) {
   return useQuery({
     queryKey: caseKeys.customer(customerId),
     queryFn: () => fetchCustomerCases(customerId),
-    refetchInterval: CASE_POLL_INTERVAL_MS,
+    refetchInterval: POLL_REFETCH_INTERVAL,
   });
 }
 

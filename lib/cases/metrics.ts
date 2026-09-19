@@ -1,4 +1,5 @@
 import { getSlaState } from "@/lib/cases/sla";
+import { getRiskTier } from "@/lib/cases/risk";
 import type { Case } from "@/lib/cases/types";
 
 export interface CaseMetrics {
@@ -7,8 +8,6 @@ export interface CaseMetrics {
   critical: number;
   assignedToMe: number;
 }
-
-const CRITICAL_SEVERITY_THRESHOLD = 10;
 
 export function computeCaseMetrics(
   cases: Case[],
@@ -22,7 +21,10 @@ export function computeCaseMetrics(
     nearSlaBreach: active.filter(
       (c) => getSlaState(c.sla_due_at, now) === "near-breach"
     ).length,
-    critical: active.filter((c) => c.severity >= CRITICAL_SEVERITY_THRESHOLD)
+    // Driven by the combined risk score (severity + threat-intel
+    // confidence), not severity alone — matches the pipeline's own
+    // auto_contain gate rather than double-counting a raw Wazuh level.
+    critical: active.filter((c) => getRiskTier(c.risk_score) === "critical")
       .length,
     assignedToMe: userId
       ? active.filter((c) => c.assigned_analyst?.id === userId).length

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { cn } from "cn";
 import { useAuth } from "@/components/auth/auth-provider";
 import { EscalateDialog } from "@/components/cases/escalate-dialog";
+import { RiskBadge } from "@/components/cases/risk-badge";
 import { SeverityIndicator } from "@/components/cases/severity-indicator";
 import { SlaBadge } from "@/components/cases/sla-badge";
 import { StatusBadge } from "@/components/cases/status-badge";
@@ -32,17 +33,19 @@ import { useNow } from "@/hooks/use-now";
 import { useAssignCaseMutation, useCasesQuery } from "@/lib/cases/queries";
 import type { Case, CaseStatus } from "@/lib/cases/types";
 
-type SortKey = "severity" | "sla";
+type SortKey = "severity" | "sla" | "risk";
 
 // Fixed, sensible direction per key: soonest-due first for SLA,
-// most-severe first for Severity.
+// most-severe/highest-risk first for Severity/Risk.
 const SORT_DIRECTION: Record<SortKey, "asc" | "desc"> = {
   sla: "asc",
   severity: "desc",
+  risk: "desc",
 };
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "sla", label: "SLA" },
+  { key: "risk", label: "Risk" },
   { key: "severity", label: "Severity" },
 ];
 
@@ -135,8 +138,10 @@ export function TriageQueue() {
       const diff =
         sortKey === "severity"
           ? a.severity - b.severity
-          : new Date(a.sla_due_at).getTime() -
-            new Date(b.sla_due_at).getTime();
+          : sortKey === "risk"
+            ? a.risk_score - b.risk_score
+            : new Date(a.sla_due_at).getTime() -
+              new Date(b.sla_due_at).getTime();
       return direction === "asc" ? diff : -diff;
     });
     return copy;
@@ -293,6 +298,9 @@ export function TriageQueue() {
                   Severity
                 </TableHead>
                 <TableHead className="bg-muted/50 text-xs font-bold tracking-wide text-muted-foreground uppercase">
+                  Risk
+                </TableHead>
+                <TableHead className="bg-muted/50 text-xs font-bold tracking-wide text-muted-foreground uppercase">
                   SLA
                 </TableHead>
                 <TableHead className="bg-muted/50 text-xs font-bold tracking-wide text-muted-foreground uppercase">
@@ -313,7 +321,7 @@ export function TriageQueue() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={8} className="sr-only" role="status">
+                  <TableCell colSpan={9} className="sr-only" role="status">
                     Loading cases…
                   </TableCell>
                 </TableRow>
@@ -321,7 +329,7 @@ export function TriageQueue() {
               {isLoading &&
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i} aria-hidden="true">
-                    <TableCell colSpan={8}>
+                    <TableCell colSpan={9}>
                       <Skeleton className="h-5 w-full" />
                     </TableCell>
                   </TableRow>
@@ -330,7 +338,7 @@ export function TriageQueue() {
               {!isLoading && sorted.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={9}
                     className="py-16 text-center text-muted-foreground"
                     role="status"
                   >
@@ -358,6 +366,9 @@ export function TriageQueue() {
                   </TableCell>
                   <TableCell>
                     <SeverityIndicator severity={c.severity} />
+                  </TableCell>
+                  <TableCell>
+                    <RiskBadge riskScore={c.risk_score} />
                   </TableCell>
                   <TableCell>
                     {c.status === "resolved" ? (

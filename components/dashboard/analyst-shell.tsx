@@ -1,8 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { WifiOff } from "lucide-react";
+import {
+  ClipboardList,
+  LayoutDashboard,
+  Menu,
+  ShieldAlert,
+  WifiOff,
+  X,
+} from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
@@ -10,70 +18,134 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { useCasesQuery } from "@/lib/cases/queries";
 import { cn } from "cn";
 
-const NAV_LINKS = [{ href: "/cases", label: "Triage Queue" }];
+const NAV_LINKS = [
+  { href: "/cases", label: "Triage Queue", icon: ClipboardList },
+  { href: "/cases/overview", label: "Overview", icon: LayoutDashboard },
+  { href: "/cases/incident-command", label: "Incident Command", icon: ShieldAlert },
+];
+
+function SidebarNav({
+  pathname,
+  onNavigate,
+}: {
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <nav aria-label="Primary" className="flex flex-col gap-1 p-3">
+      {NAV_LINKS.map((link) => {
+        const Icon = link.icon;
+        const active = pathname === link.href;
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              active
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
+            )}
+          >
+            <Icon className="size-4 shrink-0" aria-hidden="true" />
+            {link.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
 export function AnalystShell({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const pathname = usePathname();
   const { data, dataUpdatedAt, errorUpdatedAt } = useCasesQuery();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const isPollingDisconnected =
     Boolean(data) && errorUpdatedAt > 0 && errorUpdatedAt > dataUpdatedAt;
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-1">
       <a
         href="#main-content"
         className="sr-only rounded-md bg-background px-3 py-2 text-sm font-medium focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50"
       >
         Skip to content
       </a>
-      <header className="sticky top-0 z-40 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="flex min-w-0 items-center gap-3 sm:gap-6">
-            <Wordmark inverted className="h-6 shrink-0 sm:h-7" />
-            <nav
-              aria-label="Primary"
-              className="flex items-center gap-1 text-sm font-medium"
-            >
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "rounded-md px-2 py-1.5 whitespace-nowrap transition-colors sm:px-3",
-                    pathname === link.href
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
-                  )}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-          <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-            <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground" />
-            <UserMenu subtitle={user?.role} />
-          </div>
-        </div>
-      </header>
 
-      {isPollingDisconnected && (
-        <div
-          role="status"
-          className="border-b border-amber-200 bg-amber-50 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200"
-        >
-          <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-4 py-2 sm:px-6">
-            <WifiOff className="size-4" aria-hidden="true" />
-            Reconnecting to Case API...
-          </div>
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
+        <div className="flex items-center px-5 py-4">
+          <Wordmark inverted className="h-7" />
+        </div>
+        <SidebarNav pathname={pathname} />
+      </aside>
+
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden="true"
+          />
+          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+            <div className="flex items-center justify-between px-5 py-4">
+              <Wordmark inverted className="h-7" />
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen(false)}
+                className="rounded-md p-1.5 text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
+                aria-label="Close navigation"
+              >
+                <X className="size-5" aria-hidden="true" />
+              </button>
+            </div>
+            <SidebarNav
+              pathname={pathname}
+              onNavigate={() => setMobileNavOpen(false)}
+            />
+          </aside>
         </div>
       )}
 
-      <div id="main-content" className="flex flex-1 flex-col p-4 sm:p-6">
-        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4">
-          {children}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-40 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
+          <div className="flex w-full items-center justify-between gap-3 px-4 py-3 sm:px-6">
+            <div className="flex min-w-0 items-center gap-3 md:hidden">
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen(true)}
+                className="rounded-md p-1.5 text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
+                aria-label="Open navigation"
+              >
+                <Menu className="size-5" aria-hidden="true" />
+              </button>
+              <Wordmark inverted className="h-6 shrink-0 sm:h-7" />
+            </div>
+            <div className="ml-auto flex shrink-0 items-center gap-3 sm:gap-4">
+              <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground" />
+              <UserMenu subtitle={user?.role} />
+            </div>
+          </div>
+        </header>
+
+        {isPollingDisconnected && (
+          <div
+            role="status"
+            className="border-b border-amber-200 bg-amber-50 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200"
+          >
+            <div className="flex w-full items-center gap-2 px-4 py-2 sm:px-6">
+              <WifiOff className="size-4" aria-hidden="true" />
+              Reconnecting to Case API...
+            </div>
+          </div>
+        )}
+
+        <div id="main-content" className="flex flex-1 flex-col p-4 sm:p-6">
+          <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4">
+            {children}
+          </div>
         </div>
       </div>
     </div>

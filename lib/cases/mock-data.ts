@@ -1,10 +1,13 @@
+import { computeRiskScore } from "@/lib/cases/risk";
 import type { Case, CaseEvent } from "@/lib/cases/types";
 
 const now = Date.now();
 const minutes = (n: number) => new Date(now + n * 60_000).toISOString();
 const hoursAgo = (n: number) => new Date(now - n * 60 * 60_000).toISOString();
 
-export const mockCases: Case[] = [
+// risk_score is derived, not authored by hand, so it can never drift from
+// the severity/confidence it's supposed to summarize.
+const rawMockCases: Omit<Case, "risk_score">[] = [
   {
     id: "cs_8f91a2b",
     customer_id: "cust_acme_01",
@@ -226,6 +229,11 @@ export const mockCases: Case[] = [
     },
   },
 ];
+
+export const mockCases: Case[] = rawMockCases.map((c) => ({
+  ...c,
+  risk_score: computeRiskScore(c.severity, c.opencti_enrichment?.confidence ?? 0),
+}));
 
 export const mockCaseEvents: Record<string, CaseEvent[]> = {
   cs_8f91a2b: [

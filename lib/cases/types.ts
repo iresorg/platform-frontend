@@ -37,6 +37,10 @@ export interface Case {
   customer_name: string;
   source: string;
   severity: number;
+  // Combined Wazuh + OpenCTI signal (0-100): risk_score = severity/15*60 +
+  // opencti_confidence/100*40. The number the pipeline's own escalation
+  // policy is gated on — see lib/cases/risk.ts.
+  risk_score: number;
   status: CaseStatus;
   assigned_analyst: AssignedAnalyst | null;
   title: string;

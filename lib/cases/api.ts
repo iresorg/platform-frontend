@@ -1,5 +1,5 @@
 import { ApiError } from "@/lib/api-error";
-import { API_BASE_URL, USE_MOCK_API } from "@/lib/config";
+import { API_BASE_URL, USE_MOCK_CASES } from "@/lib/config";
 import { clearAuth, getStoredToken } from "@/lib/auth/storage";
 import { mockCaseEvents, mockCases } from "@/lib/cases/mock-data";
 import type {
@@ -75,7 +75,7 @@ function addEvent(caseId: string, event: Omit<CaseEvent, "id" | "case_id">) {
 }
 
 export async function fetchCases(filters?: CaseFilters): Promise<Case[]> {
-  if (USE_MOCK_API) {
+  if (USE_MOCK_CASES) {
     return delay(applyFilters(store.cases, filters));
   }
   const params = new URLSearchParams();
@@ -87,7 +87,7 @@ export async function fetchCases(filters?: CaseFilters): Promise<Case[]> {
 }
 
 export async function fetchCase(id: string): Promise<Case> {
-  if (USE_MOCK_API) {
+  if (USE_MOCK_CASES) {
     const found = store.cases.find((c) => c.id === id);
     if (!found) throw new ApiError("Case not found", 404);
     return delay({ ...found });
@@ -96,7 +96,7 @@ export async function fetchCase(id: string): Promise<Case> {
 }
 
 export async function fetchCaseEvents(id: string): Promise<CaseEvent[]> {
-  if (USE_MOCK_API) {
+  if (USE_MOCK_CASES) {
     return delay(store.events[id] ?? []);
   }
   return request<CaseEvent[]>(`/cases/${id}/events`);
@@ -106,7 +106,7 @@ export async function updateCaseStatus(
   id: string,
   status: Case["status"]
 ): Promise<Case> {
-  if (USE_MOCK_API) {
+  if (USE_MOCK_CASES) {
     const found = store.cases.find((c) => c.id === id);
     if (!found) throw new ApiError("Case not found", 404);
     const previousStatus = found.status;
@@ -129,7 +129,7 @@ export async function submitVerdict(
   id: string,
   verdict: CaseVerdict
 ): Promise<Case> {
-  if (USE_MOCK_API) {
+  if (USE_MOCK_CASES) {
     const found = store.cases.find((c) => c.id === id);
     if (!found) throw new ApiError("Case not found", 404);
     found.verdict = verdict;
@@ -152,7 +152,7 @@ export async function assignCase(
   id: string,
   analyst: AssignedAnalyst
 ): Promise<Case> {
-  if (USE_MOCK_API) {
+  if (USE_MOCK_CASES) {
     const found = store.cases.find((c) => c.id === id);
     if (!found) throw new ApiError("Case not found", 404);
     found.assigned_analyst = analyst;
@@ -172,7 +172,7 @@ export async function escalateCase(
   id: string,
   reason: string
 ): Promise<Case> {
-  if (USE_MOCK_API) {
+  if (USE_MOCK_CASES) {
     const found = store.cases.find((c) => c.id === id);
     if (!found) throw new ApiError("Case not found", 404);
     found.status = "escalated";
@@ -194,7 +194,7 @@ export async function addCaseNote(
   id: string,
   note: string
 ): Promise<CaseEvent> {
-  if (USE_MOCK_API) {
+  if (USE_MOCK_CASES) {
     const found = store.cases.find((c) => c.id === id);
     if (!found) throw new ApiError("Case not found", 404);
     const event = addEvent(id, {
@@ -212,7 +212,7 @@ export async function addCaseNote(
 }
 
 export async function fetchCustomerCases(customerId: string): Promise<Case[]> {
-  if (USE_MOCK_API) {
+  if (USE_MOCK_CASES) {
     return delay(store.cases.filter((c) => c.customer_id === customerId));
   }
   return request<Case[]>(`/customers/${customerId}/cases`);

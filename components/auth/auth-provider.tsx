@@ -9,8 +9,11 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { login as loginRequest } from "@/lib/auth/api";
-import { clearAuth, getStoredUser, storeAuth } from "@/lib/auth/storage";
+import { login as loginRequest, mapMe } from "@/lib/auth/api";
+import { realLogout } from "@/lib/auth/real-api";
+import { clearAuth, getStoredToken, getStoredUser, storeAuth } from "@/lib/auth/storage";
+import { getMe } from "@/lib/tenants/api";
+import { USE_MOCK_AUTH } from "@/lib/config";
 import type { AuthUser, LoginCredentials } from "@/lib/auth/types";
 
 interface AuthContextValue {
@@ -18,6 +21,9 @@ interface AuthContextValue {
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<AuthUser>;
   logout: () => void;
+  // Re-reads /me and updates the stored user — call after anything that
+  // changes the active tenant or the user's permissions.
+  refreshSession: () => Promise<AuthUser>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -56,13 +62,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    if (!USE_MOCK_AUTH) {
+      // Best-effort — the real session lives server-side in the sessionid
+      // cookie, but we clear local state regardless of whether this call
+      // actually reaches the backend (e.g. CORS).
+      realLogout().catch(() => {});
+    }
     clearAuth();
     setUser(null);
     router.replace("/login");
   }, [router]);
 
+  const refreshSession = useCallback(async () => {
+    const me = await getMe();
+    const current = getStoredUser();
+    const refreshed: AuthUser = { ...mapMe(me), session_id: current?.session_id };
+    const token = getStoredToken();
+    if (token) storeAuth(token, refreshed);
+    setUser(refreshed);
+    return refreshed;
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

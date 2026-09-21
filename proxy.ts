@@ -6,6 +6,8 @@ type Role = "analyst" | "lead" | "customer";
 const SESSION_COOKIE = "ires_session";
 const ANALYST_ROUTE_PREFIXES = ["/cases"];
 const CUSTOMER_ROUTE_PREFIXES = ["/portal"];
+// Any signed-in role may use these (role checks stay on the client).
+const SHARED_ROUTE_PREFIXES = ["/settings"];
 
 function roleHome(role: Role): string {
   return role === "customer" ? "/portal" : "/cases";
@@ -28,8 +30,12 @@ export function proxy(request: NextRequest) {
     pathname.startsWith(p)
   );
 
+  const isSharedRoute = SHARED_ROUTE_PREFIXES.some((p) =>
+    pathname.startsWith(p)
+  );
+
   if (!role) {
-    if (isAnalystRoute || isCustomerRoute) {
+    if (isAnalystRoute || isCustomerRoute || isSharedRoute) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("from", pathname);
       return NextResponse.redirect(loginUrl);

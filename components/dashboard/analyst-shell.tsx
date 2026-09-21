@@ -5,35 +5,64 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ClipboardList,
+  FolderOpen,
   LayoutDashboard,
   Menu,
+  Radio,
   ShieldAlert,
+  UserCog,
+  Users,
   WifiOff,
   X,
 } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { TenantSwitcher } from "@/components/tenants/tenant-switcher";
 import { UserMenu } from "@/components/user-menu";
+import { useCan } from "@/hooks/use-can";
 import { useAuth } from "@/components/auth/auth-provider";
 import { useCasesQuery } from "@/lib/cases/queries";
 import { cn } from "cn";
 
-const NAV_LINKS = [
+// Split so it's visually unambiguous which pages hit the real backend and
+// which are demo data — the API surface doesn't have a /cases or
+// /endpoints route, so those stay mock by necessity, not by choice.
+const LIVE_NAV_LINKS = [
+  { href: "/cases/live-alerts", label: "Live Alerts", icon: Radio },
+  { href: "/cases/incidents", label: "Incidents", icon: FolderOpen },
+];
+
+const WORKSPACE_NAV_LINKS = [
+  { href: "/settings/team", label: "Team", icon: Users, permission: "members.view" },
+  { href: "/settings/account", label: "Account", icon: UserCog },
+];
+
+const DEMO_NAV_LINKS = [
   { href: "/cases", label: "Triage Queue", icon: ClipboardList },
   { href: "/cases/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/cases/incident-command", label: "Incident Command", icon: ShieldAlert },
 ];
 
-function SidebarNav({
+function NavGroup({
+  label,
+  links,
   pathname,
   onNavigate,
 }: {
+  label: string;
+  links: { href: string; label: string; icon: React.ElementType; permission?: string }[];
   pathname: string;
   onNavigate?: () => void;
 }) {
+  const can = useCan();
+  const visible = links.filter((l) => !l.permission || can(l.permission));
+  if (visible.length === 0) return null;
   return (
-    <nav aria-label="Primary" className="flex flex-col gap-1 p-3">
-      {NAV_LINKS.map((link) => {
+    <div className="flex flex-col gap-1">
+      <p className="px-3 pt-3 pb-1 text-[0.65rem] font-bold tracking-wide text-sidebar-foreground/50 uppercase">
+        {label}
+      </p>
+      {visible.map((link) => {
         const Icon = link.icon;
         const active = pathname === link.href;
         return (
@@ -53,6 +82,37 @@ function SidebarNav({
           </Link>
         );
       })}
+    </div>
+  );
+}
+
+function SidebarNav({
+  pathname,
+  onNavigate,
+}: {
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <nav aria-label="Primary" className="flex flex-col gap-1 px-3 pb-3">
+      <NavGroup
+        label="Live Data"
+        links={LIVE_NAV_LINKS}
+        pathname={pathname}
+        onNavigate={onNavigate}
+      />
+      <NavGroup
+        label="Workspace"
+        links={WORKSPACE_NAV_LINKS}
+        pathname={pathname}
+        onNavigate={onNavigate}
+      />
+      <NavGroup
+        label="Demo"
+        links={DEMO_NAV_LINKS}
+        pathname={pathname}
+        onNavigate={onNavigate}
+      />
     </nav>
   );
 }
@@ -112,16 +172,17 @@ export function AnalystShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
           <div className="flex w-full items-center justify-between gap-3 px-4 py-3 sm:px-6">
-            <div className="flex min-w-0 items-center gap-3 md:hidden">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(true)}
-                className="rounded-md p-1.5 text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
+                className="rounded-md p-1.5 text-sidebar-foreground/80 hover:bg-sidebar-accent/60 md:hidden"
                 aria-label="Open navigation"
               >
                 <Menu className="size-5" aria-hidden="true" />
               </button>
-              <Wordmark inverted className="h-6 shrink-0 sm:h-7" />
+              <Wordmark inverted className="hidden h-7 shrink-0 sm:block md:hidden" />
+              <TenantSwitcher />
             </div>
             <div className="ml-auto flex shrink-0 items-center gap-3 sm:gap-4">
               <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground" />

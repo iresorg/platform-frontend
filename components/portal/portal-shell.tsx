@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { TenantSwitcher } from "@/components/tenants/tenant-switcher";
 import { UserMenu } from "@/components/user-menu";
 import { useAuth } from "@/components/auth/auth-provider";
 import { cn } from "cn";
@@ -44,6 +45,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
           <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+            <TenantSwitcher />
             <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground" />
             <UserMenu subtitle={user?.customer_id} />
           </div>

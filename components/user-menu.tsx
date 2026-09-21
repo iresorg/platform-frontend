@@ -1,7 +1,9 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import Link from "next/link";
+import { LogOut, UserCog, Users } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { useCan } from "@/hooks/use-can";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -20,6 +22,7 @@ function getInitials(name: string): string {
 
 export function UserMenu({ subtitle }: { subtitle?: string }) {
   const { user, logout } = useAuth();
+  const can = useCan();
 
   if (!user) return null;
 
@@ -40,6 +43,21 @@ export function UserMenu({ subtitle }: { subtitle?: string }) {
           <span className="text-sm font-medium">{user.name}</span>
           <span className="text-xs text-muted-foreground">{subtitle}</span>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/settings/account">
+            <UserCog aria-hidden="true" />
+            Account
+          </Link>
+        </DropdownMenuItem>
+        {can("members.view") && (
+          <DropdownMenuItem asChild>
+            <Link href="/settings/team">
+              <Users aria-hidden="true" />
+              Team
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={logout}>
           <LogOut aria-hidden="true" />

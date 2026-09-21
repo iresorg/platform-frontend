@@ -1,6 +1,6 @@
 import { clearAuth, getStoredToken } from "@/lib/auth/storage";
 import { ApiError } from "@/lib/api-error";
-import { API_BASE_URL, USE_MOCK_API } from "@/lib/config";
+import { API_BASE_URL, USE_MOCK_ENDPOINTS } from "@/lib/config";
 import { mockEndpoints } from "@/lib/endpoints/mock-data";
 import type { Endpoint } from "@/lib/endpoints/types";
 
@@ -33,14 +33,14 @@ async function request<T>(path: string): Promise<T> {
 }
 
 export async function fetchEndpoints(): Promise<Endpoint[]> {
-  if (USE_MOCK_API) return delay(mockEndpoints);
+  if (USE_MOCK_ENDPOINTS) return delay(mockEndpoints);
   return request<Endpoint[]>("/endpoints");
 }
 
 export async function fetchCustomerEndpoints(
   customerId: string
 ): Promise<Endpoint[]> {
-  if (USE_MOCK_API) {
+  if (USE_MOCK_ENDPOINTS) {
     return delay(mockEndpoints.filter((e) => e.customer_id === customerId));
   }
   return request<Endpoint[]>(`/customers/${customerId}/endpoints`);

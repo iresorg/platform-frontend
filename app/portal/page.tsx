@@ -175,11 +175,11 @@ export default function PortalPage() {
         </p>
         <div className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:gap-6">
           <a
-            href="mailto:soc@ires.com"
+            href="mailto:soc@iresorg.com"
             className="flex items-center gap-2 font-medium text-brand-navy hover:underline dark:text-[#8b8fe8]"
           >
             <Mail className="size-4" aria-hidden="true" />
-            soc@ires.com
+            soc@iresorg.com
           </a>
           <a
             href="tel:+18005550199"

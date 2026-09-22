@@ -8,20 +8,20 @@ interface MockAccount {
 // Demo-only accounts, used while NEXT_PUBLIC_API_BASE_URL is unset.
 export const mockAccounts: MockAccount[] = [
   {
-    credentials: { email: "analyst@ires.com", password: "analyst123" },
+    credentials: { email: "analyst@iresorg.com", password: "analyst123" },
     user: {
       id: "an_01",
       name: "Adesina Islam",
-      email: "analyst@ires.com",
+      email: "analyst@iresorg.com",
       role: "analyst",
     },
   },
   {
-    credentials: { email: "lead@ires.com", password: "lead123" },
+    credentials: { email: "lead@iresorg.com", password: "lead123" },
     user: {
       id: "an_02",
       name: "Chidinma Okafor",
-      email: "lead@ires.com",
+      email: "lead@iresorg.com",
       role: "lead",
     },
   },

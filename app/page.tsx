@@ -5,6 +5,7 @@ import { Hero } from "@/components/landing/hero";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { IntegrationsStrip } from "@/components/landing/integrations-strip";
 import { PersonaQuotes } from "@/components/landing/persona-quotes";
+import { ScrollToTop } from "@/components/landing/scroll-to-top";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
 import { SolutionsGrid } from "@/components/landing/solutions-grid";
@@ -24,6 +25,7 @@ export default function Home() {
         <CtaBand />
       </main>
       <SiteFooter />
+      <ScrollToTop />
     </div>
   );
 }

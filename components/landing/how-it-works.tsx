@@ -2,6 +2,7 @@
 
 import { Gauge, MessageSquareText, Radar, ShieldCheck } from "lucide-react";
 import { Reveal } from "@/components/landing/reveal";
+import { SectionBackdrop } from "@/components/landing/section-backdrop";
 import { ScrollStack, type ScrollStage } from "@/components/landing/scroll-stack";
 
 const STAGES: ScrollStage[] = [
@@ -11,6 +12,7 @@ const STAGES: ScrollStage[] = [
     description:
       "Alerts stream in live — refreshed every 20 seconds, not batched overnight — so nothing sits in a queue nobody's watching.",
     icon: Radar,
+    accent: "sky",
   },
   {
     label: "Correlate",
@@ -18,6 +20,7 @@ const STAGES: ScrollStage[] = [
     description:
       "Every alert lands with confidence-scored threat intelligence already attached, so analysts start investigating instead of searching.",
     icon: ShieldCheck,
+    accent: "violet",
   },
   {
     label: "Triage",
@@ -25,6 +28,7 @@ const STAGES: ScrollStage[] = [
     description:
       "Each case carries a risk score and a running SLA countdown from the second it's opened, and routes to the right analyst without manual handoffs.",
     icon: Gauge,
+    accent: "amber",
   },
   {
     label: "Communicate",
@@ -32,22 +36,26 @@ const STAGES: ScrollStage[] = [
     description:
       "The customer portal shows what happened and what to do next — never raw logs, rule IDs, or anything that needs a security background to parse.",
     icon: MessageSquareText,
+    accent: "emerald",
   },
 ];
 
 export function HowItWorks() {
   return (
     <section id="how-it-works" className="bg-background py-20 sm:py-28">
-      <Reveal className="mx-auto max-w-2xl px-6 text-center sm:px-10">
-        <span className="text-xs font-bold tracking-wide text-brand-red uppercase">
-          One pipeline
-        </span>
-        <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
-          From detection to a client who understands what happened.
-        </h2>
-      </Reveal>
+      <div className="relative pb-16">
+        <SectionBackdrop />
+        <Reveal className="mx-auto max-w-2xl px-6 text-center sm:px-10">
+          <span className="text-xs font-bold tracking-wide text-brand-red uppercase">
+            One pipeline
+          </span>
+          <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
+            From detection to a client who understands what happened.
+          </h2>
+        </Reveal>
+      </div>
 
-      <div className="mt-12 lg:mt-4">
+      <div className="lg:mt-4">
         <ScrollStack stages={STAGES} />
       </div>
     </section>

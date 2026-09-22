@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# iRES — Incident Response & Emergency Service
 
-## Getting Started
+A multi-tenant SOC (Security Operations Center) platform frontend: one case pipeline connecting alert triage, incident management, and threat intelligence for analysts, with a plain-language client portal for customers.
 
-First, run the development server:
+Live at **[ires-system.vercel.app](https://ires-system.vercel.app)**.
+
+## Tech stack
+
+- **[Next.js 16](https://nextjs.org)** (App Router) with Turbopack, **React 19**, **TypeScript**
+- **Tailwind CSS v4** + **shadcn/radix-ui** components, **lucide-react** icons, **next-themes** for light/dark mode
+- **react-hook-form** + **zod** for forms and validation
+- **TanStack Query** for server state, **TanStack Table** for data tables
+- **sonner** for toast notifications
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Production build |
+| `npm run start` | Run the production build |
+| `npm run lint` | Lint the codebase |
 
-## Learn More
+### Environment variables
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_API_BASE_URL` | No | Base URL of the real backend (e.g. `https://api.example.com`). When unset, alerts fall back to mock data. |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## App structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Public:
+- `/` — Landing page.
+- `/login`, `/register`, `/forgot-password`, `/reset-password`, `/invite/[token]` — Auth flow (shared `AuthSplitLayout`, with a back button to the landing page).
 
-## Deploy on Vercel
+SOC analyst workspace (`/cases/*`):
+- `/cases` — Triage queue, the analyst landing page.
+- `/cases/overview` — Security operations dashboard (alert stats, threat level, endpoint status).
+- `/cases/incident-command` — Escalated/major incidents across customers.
+- `/cases/incidents`, `/cases/incidents/[id]` — Incident list and detail.
+- `/cases/live-alerts`, `/cases/live-alerts/[id]` — Live alert list and triage/escalation detail.
+- `/cases/[id]` — Case workspace.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Customer portal (`/portal/*`):
+- `/portal` — Customer dashboard (endpoint health, stats, cases, CSV export).
+- `/portal/cases/[id]` — Plain-language case timeline for a customer.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Account (any signed-in role):
+- `/settings/account` — Profile, password change, active sessions.
+- `/settings/team` — Team members and role-based access control (RBAC), permission-gated.
+
+## Auth model
+
+Roles are UI-level only: `analyst`, `lead`, `customer`. The real backend has no role concept — instead it returns tenant-scoped permissions (`GET /api/v1/me`), and `lib/auth/roles.ts` derives a UI role from which permissions a user holds (e.g. `alerts.update`, `incidents.create` → `analyst`). A freshly-registered tenant owner holds every permission, so lands in the SOC workspace — there's no server-side "customer account" type yet.
+
+Session: JWT + user info in `localStorage`; a non-sensitive role-only cookie (`ires_session`) lets Next middleware (`proxy.ts`) do optimistic role-based redirects. Real authorization is always enforced server-side via the bearer token. Client-side pages are additionally guarded by `<RequireRole>`.
+
+### Mock vs. real data (`lib/config.ts`)
+
+The backend currently covers auth, alerts, incidents, and tenant/RBAC management, but has no concept of this app's unified "Case" model (SLA, risk score, assigned analyst, verdict) or a device/endpoint inventory — so those two stay mocked until the backend grows the matching routes.
+
+| Domain | Source | Switch |
+| --- | --- | --- |
+| Auth | Real (`/api/v1/auth/*`, `/api/v1/me`) | `USE_MOCK_AUTH = false` |
+| Alerts | Real when `NEXT_PUBLIC_API_BASE_URL` is set | `USE_MOCK_ALERTS = !API_BASE_URL` |
+| Incidents | Real (`/api/v1/incidents/*`) | — |
+| Tenants / RBAC | Real (`/api/v1/tenants/*`, `/api/v1/permissions`) | — |
+| Cases | Mocked (in-memory, seeded data) | `USE_MOCK_CASES = true` |
+| Endpoints | Mocked (in-memory, seeded data) | `USE_MOCK_ENDPOINTS = true` |
+
+`REALTIME_MODE` (`"poll"` | `"push"`) is a single switch for how case/queue data refreshes: `"poll"` (current default) refetches every `CASE_POLL_INTERVAL_MS` (20s); `"push"` is reserved for a future WebSocket/SSE subscription.
+
+## Deployment
+
+Hosted on Vercel (project `ires-system`), auto-deployed on push to `main` via the GitHub integration (`github.com/iresorg/platform-frontend`). Production env vars are set directly in the Vercel project settings.
+
+## Keeping this README current
+
+This file is meant to track the app as it evolves — update the relevant section whenever routes, the auth model, the mock/real data split, or environment variables change.

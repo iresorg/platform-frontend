@@ -8,6 +8,7 @@ Live at **[ires-system.vercel.app](https://ires-system.vercel.app)**.
 
 - **[Next.js 16](https://nextjs.org)** (App Router) with Turbopack, **React 19**, **TypeScript**
 - **Tailwind CSS v4** + **shadcn/radix-ui** components, **lucide-react** icons, **next-themes** for light/dark mode
+- **motion** for scroll-driven and reveal animations (landing page)
 - **react-hook-form** + **zod** for forms and validation
 - **TanStack Query** for server state, **TanStack Table** for data tables
 - **sonner** for toast notifications
@@ -39,7 +40,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ## App structure
 
 Public:
-- `/` — Landing page.
+- `/` — Landing page (`components/landing/*`): sticky header, hero, a scroll-pinned "how it works" walkthrough (plain stacked cards on mobile), advantage/coverage/solutions grids, persona quotes, integrations marquee, and CTA/footer bands.
 - `/login`, `/register`, `/forgot-password`, `/reset-password`, `/invite/[token]` — Auth flow (shared `AuthSplitLayout`, with a back button to the landing page).
 
 SOC analyst workspace (`/cases/*`):

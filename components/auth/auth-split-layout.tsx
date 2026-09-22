@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -44,11 +46,20 @@ export function AuthSplitLayout({
       </div>
 
       <div className="flex flex-col overflow-y-auto px-6 py-8 sm:px-12">
-        <div className="flex items-center justify-between lg:justify-end">
-          <div className="lg:hidden">
-            <Wordmark className="h-7" />
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Back
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="lg:hidden">
+              <Wordmark className="h-7" />
+            </div>
+            <ThemeToggle />
           </div>
-          <ThemeToggle />
         </div>
 
         <div className="flex flex-1 flex-col justify-center">

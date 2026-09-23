@@ -1,11 +1,11 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/components/theme/theme-provider";
 
 export function ThemeToggle({ className }: { className?: string }) {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <Button
@@ -13,10 +13,16 @@ export function ThemeToggle({ className }: { className?: string }) {
       size="icon"
       aria-label="Toggle theme"
       className={className}
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      onClick={toggleTheme}
     >
-      <Sun className="dark:hidden" />
-      <Moon className="hidden dark:block" />
+      <Sun
+        className={theme === "dark" ? "hidden" : ""}
+        suppressHydrationWarning
+      />
+      <Moon
+        className={theme === "dark" ? "" : "hidden"}
+        suppressHydrationWarning
+      />
     </Button>
   );
 }

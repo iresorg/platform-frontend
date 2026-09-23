@@ -27,7 +27,7 @@ export function AdvantageGrid() {
       <div className="relative mx-auto max-w-6xl px-6 sm:px-10">
         <Reveal className="mx-auto max-w-2xl text-center">
           <span className="text-xs font-bold tracking-wide text-brand-red uppercase">
-            Who it's for
+            Who it&apos;s for
           </span>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
             Who iRES is built for

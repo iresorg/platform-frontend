@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme inline {
   --color-background: var(--background);
@@ -10,6 +10,26 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-heading: var(--font-heading);
+  --font-display: var(--font-display);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-text-muted: var(--text-muted);
+  --color-row-hover: var(--row-hover);
+  --color-danger: var(--danger);
+  --color-brand-1: var(--brand-1);
+  --color-brand-2: var(--brand-2);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-tint: var(--brand-tint);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-300: var(--gray-300);
+  --color-gray-400: var(--gray-400);
+  --color-gray-500: var(--gray-500);
+  --color-gray-600: var(--gray-600);
+  --color-gray-700: var(--gray-700);
+  --color-gray-800: var(--gray-800);
   --color-brand-navy: var(--brand-navy);
   --color-brand-red: var(--brand-red);
   --color-brand-ink: var(--brand-ink);
@@ -54,86 +74,139 @@
 }
 
 :root {
-  /* iRES brand palette — see Brand Identity Guide */
-  --brand-navy: #191970;
-  --brand-red: #ff0000;
-  --brand-ink: #2b2e3d;
-  --brand-slate: #555a6e;
-  --brand-mist: #f4f6fc;
+  /* ires design system — palette primitives (light) */
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --fg: #0a0a0a;
+  --gray-100: #f2f2f2;
+  --gray-200: #e8e8e8;
+  --gray-300: #c3c3c3;
+  --gray-400: #9d9d9d;
+  --gray-500: #787878;
+  --gray-600: #525252;
+  --gray-700: #393939;
+  --gray-800: #1f1f1f;
+  --text-muted: var(--gray-600);
+  --row-hover: var(--gray-100);
+  --danger: #e5484d;
+  --brand-1: #241a5e;
+  --brand-2: #4a2f8f;
+  --brand: #322680;
+  --brand-hover: #251c63;
+  --brand-gradient: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  --brand-tint: #eeecfb;
+  --brand-shadow: rgba(50, 38, 128, 0.16);
 
-  --font-heading: Cambria, Georgia, "Times New Roman", serif;
-  --font-sans: Calibri, Arial, Helvetica, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas,
-    "Liberation Mono", monospace;
+  /* legacy brand-token names this repo's components already reference —
+     values now come from the palette primitives above */
+  --brand-navy: var(--brand);
+  --brand-red: var(--danger);
+  --brand-ink: var(--fg);
+  --brand-slate: var(--text-muted);
+  --brand-mist: var(--brand-tint);
 
-  --background: #ffffff;
-  --foreground: var(--brand-ink);
-  --card: #ffffff;
-  --card-foreground: var(--brand-ink);
-  --popover: #ffffff;
-  --popover-foreground: var(--brand-ink);
-  --primary: var(--brand-navy);
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-heading: var(--font-display);
+  --font-sans: var(--font-inter), system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, Consolas, monospace;
+
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--surface);
+  --card-foreground: var(--fg);
+  --popover: var(--surface);
+  --popover-foreground: var(--fg);
+  --primary: var(--brand);
   --primary-foreground: #ffffff;
-  --secondary: var(--brand-mist);
-  --secondary-foreground: var(--brand-navy);
-  --muted: var(--brand-mist);
-  --muted-foreground: var(--brand-slate);
-  --accent: var(--brand-mist);
-  --accent-foreground: var(--brand-navy);
-  --destructive: var(--brand-red);
+  --secondary: var(--brand-tint);
+  --secondary-foreground: var(--brand);
+  --muted: var(--gray-100);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--gray-100);
+  --accent-foreground: var(--brand);
+  --destructive: var(--danger);
   --destructive-foreground: #ffffff;
-  --border: #e2e5f0;
-  --input: #e2e5f0;
-  --ring: var(--brand-navy);
-  --chart-1: var(--brand-navy);
-  --chart-2: var(--brand-red);
-  --chart-3: var(--brand-slate);
-  --chart-4: #7a80a0;
-  --chart-5: #b7bcd6;
+  --border: var(--gray-200);
+  --input: var(--gray-200);
+  --ring: var(--brand);
+  --chart-1: var(--brand);
+  --chart-2: var(--danger);
+  --chart-3: var(--text-muted);
+  --chart-4: var(--gray-400);
+  --chart-5: var(--gray-300);
   --radius: 0.5rem;
-  --sidebar: var(--brand-navy);
+  --sidebar: var(--brand-1);
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: var(--brand-navy);
-  --sidebar-accent: #262a8a;
+  --sidebar-primary-foreground: var(--brand-1);
+  --sidebar-accent: var(--brand-2);
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #2a2c8c;
-  --sidebar-ring: var(--brand-red);
+  --sidebar-border: var(--brand-2);
+  --sidebar-ring: var(--danger);
 }
 
-.dark {
-  --background: #14151d;
-  --foreground: var(--brand-mist);
-  --card: var(--brand-ink);
-  --card-foreground: var(--brand-mist);
-  --popover: var(--brand-ink);
-  --popover-foreground: var(--brand-mist);
-  --primary: #191970;
+:root[data-theme="dark"] {
+  /* ires design system — palette primitives (dark) */
+  --bg: #0a0a0a;
+  --surface: #161616;
+  --fg: #fafafa;
+  --gray-100: #1a1a1a;
+  --gray-200: #363636;
+  --gray-300: #535353;
+  --gray-400: #6f6f6f;
+  --gray-500: #8c8c8c;
+  --gray-600: #a8a8a8;
+  --gray-700: #c7c7c7;
+  --gray-800: #e6e6e6;
+  --text-muted: var(--gray-600);
+  --row-hover: var(--gray-100);
+  --danger: #f2555a;
+  --brand-1: #382a7a;
+  --brand-2: #6b4ac2;
+  --brand: #6250b8;
+  --brand-hover: #7a68cc;
+  --brand-gradient: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  --brand-tint: #211a3d;
+  --brand-shadow: rgba(98, 80, 184, 0.28);
+
+  --brand-navy: var(--brand);
+  --brand-red: var(--danger);
+  --brand-ink: var(--fg);
+  --brand-slate: var(--text-muted);
+  --brand-mist: var(--brand-tint);
+
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--surface);
+  --card-foreground: var(--fg);
+  --popover: var(--surface);
+  --popover-foreground: var(--fg);
+  --primary: var(--brand);
   --primary-foreground: #ffffff;
-  --secondary: #23253080;
-  --secondary-foreground: var(--brand-mist);
-  --muted: #23253080;
-  --muted-foreground: #9ba0bd;
-  --accent: #2b2e4a;
-  --accent-foreground: var(--brand-mist);
-  --destructive: #ff5c5c;
-  --destructive-foreground: #14151d;
-  --border: #ffffff1a;
-  --input: #ffffff1f;
-  --ring: #191970;
-  --chart-1: #191970;
-  --chart-2: #ff5c5c;
-  --chart-3: #9ba0bd;
-  --chart-4: #555a6e;
-  --chart-5: #363a52;
-  --sidebar: #101124;
-  --sidebar-foreground: var(--brand-mist);
-  --sidebar-primary: #191970;
+  --secondary: var(--brand-tint);
+  --secondary-foreground: var(--fg);
+  --muted: var(--gray-100);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--gray-100);
+  --accent-foreground: var(--fg);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--bg);
+  --border: var(--gray-200);
+  --input: var(--gray-200);
+  --ring: var(--brand);
+  --chart-1: var(--brand);
+  --chart-2: var(--danger);
+  --chart-3: var(--text-muted);
+  --chart-4: var(--gray-400);
+  --chart-5: var(--gray-300);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--fg);
+  --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1c1e38;
-  --sidebar-accent-foreground: var(--brand-mist);
-  --sidebar-border: #ffffff14;
-  --sidebar-ring: #ff5c5c;
+  --sidebar-accent: var(--gray-200);
+  --sidebar-accent-foreground: var(--fg);
+  --sidebar-border: var(--gray-200);
+  --sidebar-ring: var(--danger);
 }
 
 @layer base {

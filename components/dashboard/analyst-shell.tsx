@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   ClipboardList,
   FolderOpen,
+  Gauge,
   LayoutDashboard,
   Menu,
   Radio,
@@ -28,6 +29,7 @@ import { cn } from "cn";
 // which are demo data — the API surface doesn't have a /cases or
 // /endpoints route, so those stay mock by necessity, not by choice.
 const LIVE_NAV_LINKS = [
+  { href: "/cases/live-overview", label: "Live Overview", icon: Gauge },
   { href: "/cases/live-alerts", label: "Live Alerts", icon: Radio },
   { href: "/cases/incidents", label: "Incidents", icon: FolderOpen },
 ];

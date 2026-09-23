@@ -95,6 +95,40 @@ export default function IncidentDetailPage({
                 </div>
               </div>
 
+              {(incident.rule_id ||
+                incident.intel_score !== undefined ||
+                incident.sla_due_at ||
+                incident.dedupe_key ||
+                incident.opencti_enrichment) && (
+                <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                  <h2 className="mb-1 font-heading font-bold">Enrichment</h2>
+                  <p className="mb-1 text-xs text-muted-foreground">
+                    From the Wazuh/OpenCTI pipeline, when available.
+                  </p>
+                  <div className="divide-y divide-border">
+                    {incident.rule_id && <DetailRow label="Rule ID" value={incident.rule_id} />}
+                    {incident.intel_score !== undefined && (
+                      <DetailRow label="Intel Score" value={incident.intel_score} />
+                    )}
+                    {incident.occurrence_count !== undefined && (
+                      <DetailRow label="Occurrences" value={incident.occurrence_count} />
+                    )}
+                    {incident.dedupe_key && (
+                      <DetailRow label="Dedupe Key" value={incident.dedupe_key} />
+                    )}
+                    {incident.sla_due_at && (
+                      <DetailRow label="SLA Due" value={formatDateTime(incident.sla_due_at)} />
+                    )}
+                    {incident.last_seen_at && (
+                      <DetailRow label="Last Seen" value={formatDateTime(incident.last_seen_at)} />
+                    )}
+                    {incident.opencti_enrichment && (
+                      <DetailRow label="OpenCTI" value={incident.opencti_enrichment} />
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
                 <h2 className="mb-3 font-heading font-bold">Update Status</h2>
                 <StatusChangeForm incidentId={incident.id} currentStatus={incident.status} />

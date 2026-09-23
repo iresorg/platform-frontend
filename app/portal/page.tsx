@@ -6,7 +6,9 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { CustomerStatusBadge } from "@/components/portal/customer-status-badge";
 import { EndpointHealthCard } from "@/components/portal/endpoint-health-card";
 import { PortalStats } from "@/components/portal/portal-stats";
+import { RealProtectionBanner } from "@/components/portal/real-protection-banner";
 import { SecurityBanner } from "@/components/portal/security-banner";
+import { SecurityPostureCard } from "@/components/portal/security-posture-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -20,6 +22,11 @@ import {
 import { useNow } from "@/hooks/use-now";
 import { downloadCasesCsv } from "@/lib/cases/export-csv";
 import { useCustomerCasesQuery } from "@/lib/cases/queries";
+import {
+  useDashboardEndpointsQuery,
+  useProtectionStatusQuery,
+  useVulnerabilityPostureQuery,
+} from "@/lib/dashboard/queries";
 import { useCustomerEndpointsQuery } from "@/lib/endpoints/queries";
 
 function formatTime(iso: string): string {
@@ -37,6 +44,9 @@ export default function PortalPage() {
   const { data: cases, isLoading } = useCustomerCasesQuery(customerId);
   const { data: endpoints, isLoading: endpointsLoading } =
     useCustomerEndpointsQuery(customerId);
+  const { data: protection } = useProtectionStatusQuery();
+  const { data: coverage } = useDashboardEndpointsQuery();
+  const { data: posture } = useVulnerabilityPostureQuery();
 
   const sorted = [...(cases ?? [])].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -44,7 +54,9 @@ export default function PortalPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      {isLoading ? (
+      {protection ? (
+        <RealProtectionBanner status={protection} />
+      ) : isLoading ? (
         <Skeleton className="h-24 w-full rounded-xl" />
       ) : (
         <SecurityBanner cases={cases ?? []} now={now} />
@@ -161,6 +173,10 @@ export default function PortalPage() {
           <p>Contact your service manager if you need the full forensic record.</p>
         </div>
       </div>
+
+      {coverage && posture && (coverage.length > 0 || posture.Critical + posture.High + posture.Medium + posture.Low > 0) && (
+        <SecurityPostureCard coverage={coverage} posture={posture} />
+      )}
 
       {endpointsLoading ? (
         <Skeleton className="h-40 w-full rounded-xl" />

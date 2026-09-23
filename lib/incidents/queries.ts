@@ -109,10 +109,14 @@ export function useChangeIncidentStatusMutation() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: ChangeStatusPayload }) =>
       changeIncidentStatus(id, payload),
-    onSuccess: (incident, { id }) => {
-      // The response is the full updated incident (including the
-      // backend's own "Status changed" note) — use it immediately.
-      queryClient.setQueryData(incidentKeys.detail(id), incident);
+    onSuccess: (patch, { id }) => {
+      // The response is now only {id, status, resolved_at,
+      // resolution_summary} (earlier docs showed a full incident) — merge
+      // rather than replace, or every other cached field (title, notes,
+      // description...) would vanish until the invalidate below refetches.
+      queryClient.setQueryData<Incident>(incidentKeys.detail(id), (old) =>
+        old ? { ...old, ...patch } : old
+      );
       invalidateIncident(queryClient, id);
     },
   });

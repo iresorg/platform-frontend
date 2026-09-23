@@ -12,10 +12,7 @@ const COLUMNS = [
   },
   {
     heading: "Access",
-    links: [
-      { href: "/login", label: "Sign in" },
-      { href: "/register", label: "Register your organization" },
-    ],
+    links: [{ href: "/login", label: "Sign in" }],
   },
 ];
 

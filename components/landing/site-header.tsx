@@ -44,7 +44,7 @@ export function SiteHeader() {
             <a
               key={link.href}
               href={link.href}
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-md px-4 py-2.5 text-base font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {link.label}
             </a>
@@ -53,11 +53,8 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-2 lg:flex">
           <ThemeToggle />
-          <Button asChild variant="ghost" size="lg">
-            <Link href="/login">Sign in</Link>
-          </Button>
           <Button asChild size="lg">
-            <Link href="/register">Register your org</Link>
+            <Link href="/login">Sign in</Link>
           </Button>
         </div>
 
@@ -83,18 +80,15 @@ export function SiteHeader() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
-                className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
+                className="rounded-md px-3 py-2.5 text-base font-medium text-foreground hover:bg-muted"
               >
                 {link.label}
               </a>
             ))}
           </nav>
           <div className="mt-3 flex flex-col gap-2">
-            <Button asChild variant="outline" size="lg" onClick={() => setMenuOpen(false)}>
-              <Link href="/login">Sign in</Link>
-            </Button>
             <Button asChild size="lg" onClick={() => setMenuOpen(false)}>
-              <Link href="/register">Register your org</Link>
+              <Link href="/login">Sign in</Link>
             </Button>
           </div>
         </div>

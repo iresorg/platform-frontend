@@ -16,7 +16,7 @@ const SOLUTIONS = [
   {
     title: "Onboard a new client in minutes",
     description:
-      "Register an organization, invite the team, assign roles. No manual provisioning.",
+      "Set up a workspace, invite the team, assign roles. No manual provisioning.",
   },
   {
     title: "Keep analysts inside SLA",
@@ -52,7 +52,7 @@ export function SolutionsGrid() {
           {SOLUTIONS.map(({ title, description }, i) => (
             <Reveal key={title} delay={i * 0.04} className="h-full">
               <Link
-                href="/register"
+                href="/login"
                 className="group flex h-full flex-col gap-3 bg-card p-7 transition-colors hover:bg-muted/60"
               >
                 <ArrowUpRight className="size-5 text-brand-red transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />

@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { Reveal } from "@/components/landing/reveal";
 
 const INTEGRATIONS = [
-  "Wazuh",
+  "Detection Engine",
   "OpenCTI",
   "REST API",
   "Role-Based Access",

@@ -8,7 +8,7 @@ import { ScrollStack, type ScrollStage } from "@/components/landing/scroll-stack
 const STAGES: ScrollStage[] = [
   {
     label: "Detect",
-    title: "Every Wazuh detection, the moment it fires.",
+    title: "Every detection, the moment it fires.",
     description:
       "Alerts stream in live — refreshed every 20 seconds, not batched overnight — so nothing sits in a queue nobody's watching.",
     icon: Radar,

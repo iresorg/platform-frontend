@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const FACTS = [
@@ -57,9 +56,9 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="max-w-xl text-lg text-white/70"
         >
-          One pipeline connects Wazuh detections and OpenCTI intelligence to
-          your analysts — and turns every case into a plain-language update
-          your clients actually understand.
+          One pipeline connects live security detections and OpenCTI
+          intelligence to your analysts — and turns every case into a
+          plain-language update your clients actually understand.
         </motion.p>
 
         <motion.div
@@ -73,18 +72,7 @@ export function Hero() {
             size="lg"
             className="h-12 bg-brand-red px-6 text-base hover:bg-brand-red/90"
           >
-            <Link href="/register">
-              Register your organization
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="h-12 border-white/30 bg-white/5 px-6 text-base text-white hover:bg-white/10 hover:text-white"
-          >
-            <Link href="/login">Analyst sign in</Link>
+            <Link href="/login">Sign in</Link>
           </Button>
         </motion.div>
 

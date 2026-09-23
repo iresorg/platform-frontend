@@ -13,7 +13,7 @@ const COVERAGE = [
   {
     icon: Radar,
     title: "Live Alerts",
-    description: "Every Wazuh detection, triaged and escalated in real time.",
+    description: "Every live detection, triaged and escalated in real time.",
   },
   {
     icon: AlertTriangle,

@@ -13,9 +13,8 @@ const COLUMNS = [
   {
     heading: "Access",
     links: [
-      { href: "/login", label: "Analyst sign in" },
+      { href: "/login", label: "Sign in" },
       { href: "/register", label: "Register your organization" },
-      { href: "/portal", label: "Customer portal" },
     ],
   },
 ];
@@ -28,9 +27,9 @@ export function SiteFooter() {
           <div className="flex flex-col gap-4">
             <Wordmark inverted className="h-8 w-auto self-start" />
             <p className="max-w-xs text-sm text-white/60">
-              One case pipeline connecting Wazuh detections and OpenCTI
-              intelligence — full context for analysts, plain language for
-              clients.
+              One case pipeline connecting live security detections and
+              OpenCTI intelligence — full context for analysts, plain
+              language for clients.
             </p>
           </div>
 

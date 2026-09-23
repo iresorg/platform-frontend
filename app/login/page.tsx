@@ -61,7 +61,7 @@ function LoginForm() {
   return (
     <AuthSplitLayout
       headline="Triage every alert before the SLA runs out."
-      description="One case pipeline connecting Wazuh detections and OpenCTI intelligence — full context for analysts inside, plain-language updates for clients outside."
+      description="One case pipeline connecting live security detections and OpenCTI intelligence — full context for analysts inside, plain-language updates for clients outside."
     >
       <div className="flex flex-col gap-1.5">
         <h2 className="text-3xl">Sign in</h2>

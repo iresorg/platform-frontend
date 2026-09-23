@@ -29,7 +29,7 @@ const ADVANTAGES = [
     icon: Plug,
     title: "Real integrations, not a demo",
     description:
-      "Live-wired to Wazuh for detections and OpenCTI for intelligence — the alerts and incidents you see are the ones actually happening, not sample data.",
+      "Live-wired to a real detection engine and OpenCTI for intelligence — the alerts and incidents you see are the ones actually happening, not sample data.",
     accent: "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300",
   },
 ];

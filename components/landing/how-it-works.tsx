@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
 import { Gauge, MessageSquareText, Radar, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/landing/reveal";
 import { SectionBackdrop } from "@/components/landing/section-backdrop";
 import { ScrollStack, type ScrollStage } from "@/components/landing/scroll-stack";
@@ -57,15 +55,6 @@ export function HowItWorks() {
       <div className="lg:mt-4">
         <ScrollStack stages={STAGES} />
       </div>
-
-      <Reveal className="mx-auto mt-16 flex max-w-xl flex-col items-center gap-5 px-6 text-center sm:px-10">
-        <p className="text-base text-muted-foreground">
-          One case, one record, from alert to resolution.
-        </p>
-        <Button asChild size="lg">
-          <Link href="/login">Sign in</Link>
-        </Button>
-      </Reveal>
     </section>
   );
 }

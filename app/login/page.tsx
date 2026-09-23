@@ -183,13 +183,6 @@ function LoginForm() {
         </Button>
       </form>
 
-      <p className="text-center text-sm text-muted-foreground">
-        New organization?{" "}
-        <Link href="/register" className="font-medium text-primary hover:underline">
-          Register your organization
-        </Link>
-      </p>
-
       {USE_MOCK_AUTH && (
         <div className="rounded-xl border border-border bg-muted/60 px-4 py-3 text-xs text-muted-foreground">
           <p className="mb-1.5 font-bold text-secondary-foreground">

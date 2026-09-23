@@ -4,34 +4,19 @@ import { Reveal } from "@/components/landing/reveal";
 
 const SOLUTIONS = [
   {
-    title: "Run 24/7 triage without a 24/7 headcount",
+    title: "For SOC analysts",
     description:
-      "Live alert refresh and SLA countdowns mean nothing waits for someone to remember to check.",
+      "Tiered L1/L2/L3 dashboards - each a genuinely different job, not a filtered view of the same screen.",
   },
   {
-    title: "Give every client their own view",
+    title: "For the organization protected",
     description:
-      "Multi-tenant by design — each organization only ever sees its own cases, never another client's.",
+      "A customer portal with plain-language status - never raw severity codes, IOC values, or analyst names.",
   },
   {
-    title: "Onboard a new client in minutes",
+    title: "For leadership",
     description:
-      "Set up a workspace, invite the team, assign roles. No manual provisioning.",
-  },
-  {
-    title: "Keep analysts inside SLA",
-    description:
-      "Risk-scored queues surface what matters first, with the clock visible on every open case.",
-  },
-  {
-    title: "Turn detections into a defensible record",
-    description:
-      "Every escalation, note, and status change is timestamped on the incident timeline.",
-  },
-  {
-    title: "Stop translating logs into email updates",
-    description:
-      "The customer portal is the update — plain language, generated from the same case data.",
+      "Org-wide oversight through one super-admin view: every tier, every account, one place.",
   },
 ];
 
@@ -41,10 +26,10 @@ export function SolutionsGrid() {
       <div className="mx-auto max-w-6xl px-6 sm:px-10">
         <Reveal className="mx-auto max-w-2xl text-center">
           <span className="text-xs font-bold tracking-wide text-brand-red uppercase">
-            Solutions
+            Roles
           </span>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
-            Built for how a SOC actually runs.
+            Built for every role in the loop
           </h2>
         </Reveal>
 

@@ -1,44 +1,25 @@
-import {
-  AlertTriangle,
-  FolderKanban,
-  MonitorSmartphone,
-  Radar,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { AlertTriangle, FolderKanban, Radar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Reveal } from "@/components/landing/reveal";
 
 const COVERAGE = [
   {
     icon: Radar,
-    title: "Live Alerts",
-    description: "Every live detection, triaged and escalated in real time.",
+    title: "L1 — SOC Triage",
+    description:
+      "Fast, high-volume first response - the queue an analyst works through case by case.",
   },
   {
     icon: AlertTriangle,
-    title: "Incidents",
-    description: "Escalated alerts become tracked incidents with a full timeline.",
+    title: "L2 — Security Analyst",
+    description:
+      "Deeper investigation and containment on the cases that need more than a first look.",
   },
   {
     icon: FolderKanban,
-    title: "Case Pipeline",
-    description: "SLA, risk score, assigned analyst, and verdict — one view per case.",
-  },
-  {
-    icon: MonitorSmartphone,
-    title: "Customer Portal",
-    description: "Plain-language status your clients can actually act on.",
-  },
-  {
-    icon: Users,
-    title: "Team & RBAC",
-    description: "Tenant-scoped roles and permissions, managed per workspace.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Threat Intelligence",
-    description: "OpenCTI context attached automatically, confidence-scored.",
+    title: "L3 — Incident Command",
+    description:
+      "Command-level coordination on major incidents, plus the org-wide view no single queue provides.",
   },
 ];
 
@@ -48,11 +29,16 @@ export function CoverageGrid() {
       <div className="mx-auto max-w-6xl px-6 sm:px-10">
         <Reveal className="mx-auto max-w-2xl text-center">
           <span className="text-xs font-bold tracking-wide text-brand-red uppercase">
-            Coverage
+            The model
           </span>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
-            iRES has you covered.
+            Built on the Three-Level Responder Model
           </h2>
+          <p className="mt-4 text-base text-muted-foreground">
+            L1, L2, and L3 aren&apos;t filtered views of the same screen - they&apos;re
+            different jobs, with different queues and different context, all reading
+            from the same underlying case.
+          </p>
         </Reveal>
 
         <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

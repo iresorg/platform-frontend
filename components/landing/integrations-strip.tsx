@@ -3,23 +3,20 @@
 import { motion } from "motion/react";
 import { Reveal } from "@/components/landing/reveal";
 
-const INTEGRATIONS = [
-  "Detection Engine",
-  "OpenCTI",
-  "REST API",
-  "Role-Based Access",
-  "Multi-Tenant Core",
-  "SLA Engine",
+const TRUST_ITEMS = [
+  "L1 → L2 → L3 escalation",
+  "Every action timestamped",
+  "24/7 coverage",
 ];
 
 export function IntegrationsStrip() {
-  const items = [...INTEGRATIONS, ...INTEGRATIONS];
+  const items = [...TRUST_ITEMS, ...TRUST_ITEMS];
 
   return (
     <section className="border-y border-border bg-background py-14">
       <Reveal className="mx-auto max-w-2xl px-6 text-center sm:px-10">
         <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
-          Wired into the tools a SOC already runs on
+          What every case gets
         </p>
       </Reveal>
 

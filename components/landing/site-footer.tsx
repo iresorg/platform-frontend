@@ -6,13 +6,16 @@ const COLUMNS = [
     heading: "Platform",
     links: [
       { href: "#how-it-works", label: "How it works" },
-      { href: "#platform", label: "The iRES advantage" },
-      { href: "#solutions", label: "Solutions" },
+      { href: "#platform", label: "Who it's for" },
+      { href: "#solutions", label: "Roles" },
     ],
   },
   {
     heading: "Access",
-    links: [{ href: "/login", label: "Sign in" }],
+    links: [
+      { href: "/login", label: "Sign in" },
+      { href: "mailto:support@iresorg.com", label: "Request access" },
+    ],
   },
 ];
 
@@ -24,9 +27,8 @@ export function SiteFooter() {
           <div className="flex flex-col gap-4">
             <Wordmark inverted className="h-8 w-auto self-start" />
             <p className="max-w-xs text-sm text-white/60">
-              One case pipeline connecting live security detections and
-              OpenCTI intelligence — full context for analysts, plain
-              language for clients.
+              Every alert has a person accountable for it, end to end. iRES
+              tracks the chain from detection to resolution.
             </p>
           </div>
 

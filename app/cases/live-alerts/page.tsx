@@ -38,7 +38,7 @@ export default function LiveAlertsPage() {
       <div>
         <h1 className="text-xl">Live Alerts</h1>
         <p className="text-sm text-muted-foreground">
-          Raw detections streamed from the live Wazuh backend.
+          Raw detections streamed from the live detection backend.
         </p>
       </div>
 

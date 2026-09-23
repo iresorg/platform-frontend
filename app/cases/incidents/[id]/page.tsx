@@ -103,7 +103,7 @@ export default function IncidentDetailPage({
                 <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
                   <h2 className="mb-1 font-heading font-bold">Enrichment</h2>
                   <p className="mb-1 text-xs text-muted-foreground">
-                    From the Wazuh/OpenCTI pipeline, when available.
+                    From the detection engine and OpenCTI pipeline, when available.
                   </p>
                   <div className="divide-y divide-border">
                     {incident.rule_id && <DetailRow label="Rule ID" value={incident.rule_id} />}

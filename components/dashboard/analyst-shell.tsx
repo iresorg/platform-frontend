@@ -39,7 +39,7 @@ const WORKSPACE_NAV_LINKS = [
   { href: "/settings/account", label: "Account", icon: UserCog },
 ];
 
-const DEMO_NAV_LINKS = [
+const CASES_NAV_LINKS = [
   { href: "/cases", label: "Triage Queue", icon: ClipboardList },
   { href: "/cases/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/cases/incident-command", label: "Incident Command", icon: ShieldAlert },
@@ -110,8 +110,8 @@ function SidebarNav({
         onNavigate={onNavigate}
       />
       <NavGroup
-        label="Demo"
-        links={DEMO_NAV_LINKS}
+        label="Cases"
+        links={CASES_NAV_LINKS}
         pathname={pathname}
         onNavigate={onNavigate}
       />

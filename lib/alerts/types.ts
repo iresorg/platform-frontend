@@ -19,9 +19,16 @@ export interface Alert {
   created_at: string;
 }
 
+export type JsonObject = { [key: string]: unknown };
+
+// Shape confirmed against a real Wazuh alert. threat_context and
+// raw_payload are free-form objects (their keys vary by rule/decoder), so
+// they stay open-ended; lib/alerts/raw-payload.ts extracts the fields the
+// UI cares about defensively. Empty triage fields come back as "" (not
+// null) until an alert is triaged.
 export interface AlertDetail extends Alert {
-  threat_context: unknown | null;
-  raw_payload: unknown | null;
+  threat_context: JsonObject | null;
+  raw_payload: JsonObject | null;
   triage_notes: string | null;
   triaged_by_email: string | null;
   triaged_at: string | null;

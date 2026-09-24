@@ -44,9 +44,13 @@ const SEVERITY_OPTIONS: IncidentSeverity[] = ["LOW", "MEDIUM", "HIGH", "CRITICAL
 export function EscalateDialog({
   alertId,
   defaultTitle,
+  defaultSeverity = "MEDIUM",
+  defaultDescription = "",
 }: {
   alertId: string;
   defaultTitle: string;
+  defaultSeverity?: IncidentSeverity;
+  defaultDescription?: string;
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -61,7 +65,11 @@ export function EscalateDialog({
     formState: { errors, isSubmitting },
   } = useForm<EscalateFormValues>({
     resolver: zodResolver(escalateSchema),
-    defaultValues: { title: defaultTitle, severity: "MEDIUM", description: "" },
+    defaultValues: {
+      title: defaultTitle,
+      severity: defaultSeverity,
+      description: defaultDescription,
+    },
   });
 
   const severity = useWatch({ control, name: "severity" });

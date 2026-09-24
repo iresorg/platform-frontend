@@ -26,3 +26,9 @@ export const INCIDENT_SEVERITY_TONE: Record<string, BadgeTone> = {
   MEDIUM: "blue",
   LOW: "slate",
 };
+
+// Suggested incident severity when escalating, from the alert's rule level.
+export function ruleLevelToIncidentSeverity(level: number): "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" {
+  const tier = getRuleLevelTier(level);
+  return tier === "critical" ? "CRITICAL" : tier === "high" ? "HIGH" : tier === "medium" ? "MEDIUM" : "LOW";
+}

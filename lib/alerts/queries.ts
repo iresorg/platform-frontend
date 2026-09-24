@@ -8,7 +8,7 @@ import {
   fetchAlertStats,
   triageAlert,
 } from "@/lib/alerts/api";
-import type { AlertFilters, EscalatePayload, TriagePayload } from "@/lib/alerts/types";
+import type { AlertDetail, AlertFilters, EscalatePayload, TriagePayload } from "@/lib/alerts/types";
 import { CASE_POLL_INTERVAL_MS, REALTIME_MODE } from "@/lib/config";
 
 const POLL_REFETCH_INTERVAL =
@@ -58,7 +58,13 @@ export function useTriageAlertMutation() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: TriagePayload }) =>
       triageAlert(id, payload),
-    onSuccess: (_data, { id }) => {
+    onSuccess: (updated, { id }) => {
+      // The response is the updated alert — show the new status now
+      // instead of waiting on a refetch. Merged, not replaced, in case
+      // the response ever omits fields.
+      queryClient.setQueryData<AlertDetail>(alertKeys.detail(id), (old) =>
+        old ? { ...old, ...updated } : old
+      );
       queryClient.invalidateQueries({ queryKey: alertKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
       queryClient.invalidateQueries({ queryKey: alertKeys.stats() });

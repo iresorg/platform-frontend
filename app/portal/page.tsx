@@ -6,6 +6,7 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { CustomerStatusBadge } from "@/components/portal/customer-status-badge";
 import { EndpointHealthCard } from "@/components/portal/endpoint-health-card";
 import { PortalStats } from "@/components/portal/portal-stats";
+import { PortalSubnav } from "@/components/portal/portal-subnav";
 import { RealProtectionBanner } from "@/components/portal/real-protection-banner";
 import { SecurityBanner } from "@/components/portal/security-banner";
 import { SecurityPostureCard } from "@/components/portal/security-posture-card";
@@ -54,6 +55,8 @@ export default function PortalPage() {
 
   return (
     <div className="flex flex-col gap-5">
+      <PortalSubnav />
+
       {protection ? (
         <RealProtectionBanner status={protection} />
       ) : isLoading ? (

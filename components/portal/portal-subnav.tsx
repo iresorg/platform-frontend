@@ -21,39 +21,40 @@ const LINKS = [
   { href: "/portal/support", label: "Support", icon: LifeBuoy },
 ];
 
+// A fixed 6-up grid rather than a scrollable row: every device shows every
+// section and its label, no horizontal scroll at any width. Stacked
+// icon-over-label below md (tab-bar style, like a native app), inline
+// icon-beside-label from md up once there's room for it.
 export function PortalSubnav() {
   const pathname = usePathname();
 
   return (
-    <div className="relative -mx-4 sm:-mx-6">
-      <nav
-        aria-label="Portal sections"
-        className="flex items-center gap-1 overflow-x-auto px-4 pb-1 sm:px-6"
-      >
-        {LINKS.map((link) => {
-          const Icon = link.icon;
-          const active = pathname === link.href;
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
-                active
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <Icon className="size-3.5" aria-hidden="true" />
+    <nav
+      aria-label="Portal sections"
+      className="grid grid-cols-6 gap-1 rounded-lg bg-muted/60 p-1"
+    >
+      {LINKS.map((link) => {
+        const Icon = link.icon;
+        const active = pathname === link.href;
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 rounded-md px-1 py-2 font-medium transition-colors md:flex-row md:gap-1.5 md:px-3 md:py-1.5",
+              active
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Icon className="size-4 shrink-0 md:size-3.5" aria-hidden="true" />
+            <span className="w-full truncate text-center text-[0.65rem] leading-none md:w-auto md:text-left md:text-sm">
               {link.label}
-            </Link>
-          );
-        })}
-      </nav>
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent sm:hidden"
-      />
-    </div>
+            </span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

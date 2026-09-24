@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth/auth-provider";
+import { roleHome } from "@/lib/auth/roles";
 import { useSwitchTenantMutation } from "@/lib/tenants/queries";
 
 // Detail pages belong to one tenant's data — after switching they'd 404,
@@ -41,7 +42,7 @@ export function useTenantSwitch() {
         // Everything cached belongs to the previous tenant.
         await queryClient.resetQueries();
 
-        const home = me.role === "customer" ? "/portal" : "/cases";
+        const home = roleHome(me.role);
         const inWrongShell =
           (me.role === "customer" && pathname.startsWith("/cases")) ||
           (me.role !== "customer" && pathname.startsWith("/portal"));

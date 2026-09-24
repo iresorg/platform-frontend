@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { USE_MOCK_AUTH } from "@/lib/config";
 import { mockAccounts } from "@/lib/auth/mock-users";
+import { roleHome } from "@/lib/auth/roles";
 import { ApiError } from "@/lib/api-error";
 
 const loginSchema = z.object({
@@ -47,8 +48,7 @@ function LoginForm() {
     try {
       const user = await login(values);
       const from = searchParams.get("from");
-      const roleHome = user.role === "customer" ? "/portal" : "/cases";
-      router.replace(from && from.startsWith("/") ? from : roleHome);
+      router.replace(from && from.startsWith("/") ? from : roleHome(user.role));
     } catch (err) {
       setFormError(
         err instanceof ApiError

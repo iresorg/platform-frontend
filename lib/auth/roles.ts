@@ -24,3 +24,10 @@ const SOC_PERMISSIONS = new Set([
 export function deriveRole(permissions: string[]): UserRole {
   return permissions.some((p) => SOC_PERMISSIONS.has(p)) ? "analyst" : "customer";
 }
+
+// Where each role lands after signing in, and where the route guards send
+// someone who's in the wrong workspace. Analysts open on the live
+// overview (real data), not the demo triage queue at /cases.
+export function roleHome(role: UserRole): string {
+  return role === "customer" ? "/portal" : "/cases/live-overview";
+}

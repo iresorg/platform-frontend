@@ -8,6 +8,7 @@ import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
 import { useTenantSwitch } from "@/components/tenants/use-tenant-switch";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { roleHome } from "@/lib/auth/roles";
 import { useAcceptInvitationMutation } from "@/lib/tenants/queries";
 import type { Member } from "@/lib/tenants/types";
 
@@ -58,7 +59,7 @@ export default function AcceptInvitationPage({ params }: { params: Promise<{ tok
             Switch to {joined.tenant.name}
           </Button>
           <Button asChild variant="outline" size="lg" className="h-11">
-            <Link href={user?.role === "customer" ? "/portal" : "/cases"}>Stay in current organization</Link>
+            <Link href={user ? roleHome(user.role) : "/login"}>Stay in current organization</Link>
           </Button>
         </div>
       ) : user ? (

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/auth-provider";
+import { roleHome } from "@/lib/auth/roles";
 import type { UserRole } from "@/lib/auth/types";
 
 export function RequireRole({
@@ -23,7 +24,7 @@ export function RequireRole({
       return;
     }
     if (!rolesKey.split(",").includes(user.role)) {
-      router.replace(user.role === "customer" ? "/portal" : "/cases");
+      router.replace(roleHome(user.role));
     }
   }, [isLoading, user, router, rolesKey]);
 

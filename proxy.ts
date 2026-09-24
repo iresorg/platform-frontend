@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-type Role = "analyst" | "lead" | "customer";
+import { roleHome } from "@/lib/auth/roles";
+import type { UserRole as Role } from "@/lib/auth/types";
 
 const SESSION_COOKIE = "ires_session";
 const ANALYST_ROUTE_PREFIXES = ["/cases"];
 const CUSTOMER_ROUTE_PREFIXES = ["/portal"];
 // Any signed-in role may use these (role checks stay on the client).
 const SHARED_ROUTE_PREFIXES = ["/settings"];
-
-function roleHome(role: Role): string {
-  return role === "customer" ? "/portal" : "/cases";
-}
 
 // Optimistic checks only — this reads a non-sensitive role cookie to
 // pre-filter obviously unauthorized navigations. The bearer token that
@@ -47,10 +43,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(roleHome(role), request.url));
   }
   if (role === "customer" && isAnalystRoute) {
-    return NextResponse.redirect(new URL("/portal", request.url));
+    return NextResponse.redirect(new URL(roleHome(role), request.url));
   }
   if (role !== "customer" && isCustomerRoute) {
-    return NextResponse.redirect(new URL("/cases", request.url));
+    return NextResponse.redirect(new URL(roleHome(role), request.url));
   }
 
   return NextResponse.next();

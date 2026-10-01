@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
+import { AuthHeading, AuthSplitLayout, authButtonClass, authInputClass, authLabelClass } from "@/components/auth/auth-split-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,21 +45,19 @@ function ResetPasswordForm() {
 
   return (
     <AuthSplitLayout
+      eyebrow="NEW PASSWORD"
       headline="Choose a new password."
       description="Resetting signs you out everywhere, so anyone who had access to your old password loses it."
     >
-      <div className="flex flex-col gap-1.5">
-        <h2 className="text-3xl">New password</h2>
-        <p className="text-sm text-muted-foreground">Set a new password for your account.</p>
-      </div>
+      <AuthHeading eyebrow="NEW PASSWORD" title="Set a new password" subtitle="This signs you out everywhere else." />
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
         {!tokenFromLink && (
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="token" className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
+            <Label htmlFor="token" className={authLabelClass}>
               Reset token
             </Label>
-            <Input id="token" className="h-11 font-mono text-xs" aria-invalid={!!errors.token} {...register("token")} />
+            <Input id="token" className={`${authInputClass} font-mono text-xs`} aria-invalid={!!errors.token} {...register("token")} />
             {errors.token && <p className="text-xs text-destructive">{errors.token.message}</p>}
           </div>
         )}
@@ -69,10 +67,10 @@ function ResetPasswordForm() {
           { name: "confirm" as const, label: "Confirm new password" },
         ].map(({ name, label }) => (
           <div key={name} className="flex flex-col gap-1.5">
-            <Label htmlFor={name} className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
+            <Label htmlFor={name} className={authLabelClass}>
               {label}
             </Label>
-            <Input id={name} type="password" autoComplete="new-password" className="h-11" aria-invalid={!!errors[name]} {...register(name)} />
+            <Input id={name} type="password" autoComplete="new-password" className={authInputClass} aria-invalid={!!errors[name]} {...register(name)} />
             {errors[name] && <p className="text-xs text-destructive">{errors[name]?.message}</p>}
           </div>
         ))}
@@ -81,7 +79,7 @@ function ResetPasswordForm() {
             {formError}
           </p>
         )}
-        <Button type="submit" disabled={isSubmitting} size="lg" className="mt-1 h-11 text-sm">
+        <Button type="submit" disabled={isSubmitting} size="lg" className={`mt-1 ${authButtonClass}`}>
           {isSubmitting ? "Updating..." : "Update password"}
         </Button>
       </form>

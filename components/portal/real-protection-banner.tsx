@@ -1,39 +1,41 @@
-import type { ProtectionStatus } from "@/lib/dashboard/types";
+import { RelativeTime } from "@/components/shared/relative-time";
+import { isProtected } from "@/lib/portal/format";
+import type { PortalOverview } from "@/lib/portal/types";
 
-// Real, tenant-scoped, and safe for the portal: just a status word and an
-// open-incident count — nothing technical, matching the Golden Rule the
-// mock SecurityBanner already follows.
-export function RealProtectionBanner({ status }: { status: ProtectionStatus }) {
-  const protected_ = status.open_incident_count === 0;
-  const tone = protected_
-    ? {
-        border: "border-emerald-200 dark:border-emerald-900/60",
-        bg: "bg-emerald-50 dark:bg-emerald-950/40",
-        dot: "bg-emerald-500",
-        heading: "text-emerald-900 dark:text-emerald-200",
-        body: "text-emerald-800 dark:text-emerald-300",
-      }
-    : {
-        border: "border-amber-200 dark:border-amber-900/60",
-        bg: "bg-amber-50 dark:bg-amber-950/40",
-        dot: "bg-amber-500",
-        heading: "text-amber-900 dark:text-amber-200",
-        body: "text-amber-800 dark:text-amber-300",
-      };
+// First thing on the page, and deliberately quiet: a status word, one line
+// of plain text, and when it was last checked. No numbers competing for
+// attention, nothing technical.
+export function RealProtectionBanner({
+  overview,
+  checkedAt,
+}: {
+  overview: PortalOverview;
+  checkedAt?: number;
+}) {
+  const protectedNow = isProtected(overview.protection_status);
+  const heading = protectedNow ? overview.protection_status : "Incident under review";
+  const tone = protectedNow
+    ? { box: "border-tone-green-line bg-tone-green-bg", dot: "bg-emerald-brand", text: "text-tone-green-fg" }
+    : { box: "border-tone-amber-line bg-tone-amber-bg", dot: "bg-amber-brand", text: "text-tone-amber-fg" };
 
   return (
-    <div className={`flex flex-wrap items-center justify-between gap-4 rounded-xl border px-5 py-4 ${tone.border} ${tone.bg}`}>
+    <div className={`flex flex-wrap items-center justify-between gap-4 rounded-xl border px-5 py-4 ${tone.box}`}>
       <div className="flex items-start gap-3">
-        <span className={`mt-1.5 size-2.5 shrink-0 rounded-full ${tone.dot}`} aria-hidden="true" />
+        <span className={`mt-2 size-2.5 shrink-0 rounded-full ${tone.dot}`} aria-hidden="true" />
         <div>
-          <p className={`font-heading font-bold ${tone.heading}`}>{status.protection_status}</p>
-          <p className={`mt-0.5 text-sm ${tone.body}`}>
-            {protected_
-              ? "No open incidents. Your environment is being monitored 24/7."
-              : `${status.open_incident_count} open incident${status.open_incident_count === 1 ? "" : "s"} being handled by your SOC team.`}
+          <p className={`font-heading text-lg font-bold ${tone.text}`}>{heading}</p>
+          <p className={`text-sm ${tone.text}`}>
+            {protectedNow
+              ? "No active security incidents. Your environment is being monitored around the clock."
+              : "Our analysts are working on an incident in your environment. We'll post plain-language guidance here as soon as it's closed."}
           </p>
         </div>
       </div>
+      {checkedAt !== undefined && (
+        <p className={`text-xs ${tone.text}`}>
+          Last checked <RelativeTime iso={new Date(checkedAt).toISOString()} />
+        </p>
+      )}
     </div>
   );
 }

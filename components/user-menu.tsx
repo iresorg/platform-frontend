@@ -32,8 +32,8 @@ export function UserMenu({ subtitle }: { subtitle?: string }) {
         aria-label="Account menu"
         className="cursor-pointer rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <Avatar className="border border-white/25">
-          <AvatarFallback className="bg-white/10 text-xs font-bold text-white">
+        <Avatar className="border border-navy/15 dark:border-white/25">
+          <AvatarFallback className="bg-navy text-xs font-bold text-white">
             {getInitials(user.name)}
           </AvatarFallback>
         </Avatar>

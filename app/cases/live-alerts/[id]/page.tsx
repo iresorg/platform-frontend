@@ -79,7 +79,7 @@ export default function LiveAlertDetailPage({
         className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" aria-hidden="true" />
-        Back to Live Alerts
+        Back to Alerts
       </Link>
 
       {isLoading && (
@@ -128,7 +128,7 @@ export default function LiveAlertDetailPage({
               )}
 
               {raw.fullLog && (
-                <Card title="Full log" description="The original log line as Wazuh captured it.">
+                <Card title="Full log" description="The original log line as the sensor captured it.">
                   <CopyableBlock text={raw.fullLog} label="full log" />
                 </Card>
               )}
@@ -204,7 +204,7 @@ export default function LiveAlertDetailPage({
                 <span>
                   <span className="font-heading font-bold">Raw payload</span>
                   <span className="ml-2 text-xs text-muted-foreground">
-                    Everything Wazuh sent, unmodified
+                    Everything the sensor sent, unmodified
                   </span>
                 </span>
                 <span className="text-xs text-muted-foreground group-open:hidden">Show</span>

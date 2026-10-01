@@ -5,44 +5,40 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ClipboardList,
-  FolderOpen,
   Gauge,
-  LayoutDashboard,
   Menu,
   Radio,
-  ShieldAlert,
   UserCog,
   Users,
-  WifiOff,
   X,
 } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { TenantSwitcher } from "@/components/tenants/tenant-switcher";
 import { UserMenu } from "@/components/user-menu";
+import { ReconnectBanner } from "@/components/shared/reconnect-banner";
 import { useCan } from "@/hooks/use-can";
+import { usePollingDisconnected } from "@/hooks/use-polling-disconnected";
 import { useAuth } from "@/components/auth/auth-provider";
-import { useCasesQuery } from "@/lib/cases/queries";
 import { cn } from "cn";
 
-// Split so it's visually unambiguous which pages hit the real backend and
-// which are demo data — the API surface doesn't have a /cases or
-// /endpoints route, so those stay mock by necessity, not by choice.
-const LIVE_NAV_LINKS = [
-  { href: "/cases/live-overview", label: "Live Overview", icon: Gauge },
-  { href: "/cases/live-alerts", label: "Live Alerts", icon: Radio },
-  { href: "/cases/incidents", label: "Incidents", icon: FolderOpen },
+// `match` decides when a link reads as "you are here" — the queue also owns
+// every case detail page (/cases/<id>), which the other sections don't.
+const MONITOR_NAV_LINKS = [
+  { href: "/cases/live-overview", label: "Overview", icon: Gauge, match: (p: string) => p === "/cases/live-overview" },
+  {
+    href: "/cases",
+    label: "Triage Queue",
+    icon: ClipboardList,
+    match: (p: string) =>
+      p === "/cases" || (/^\/cases\/[^/]+$/.test(p) && !["live-overview", "live-alerts"].includes(p.split("/")[2])),
+  },
+  { href: "/cases/live-alerts", label: "Alerts", icon: Radio, match: (p: string) => p.startsWith("/cases/live-alerts") },
 ];
 
 const WORKSPACE_NAV_LINKS = [
-  { href: "/settings/team", label: "Team", icon: Users, permission: "members.view" },
-  { href: "/settings/account", label: "Account", icon: UserCog },
-];
-
-const CASES_NAV_LINKS = [
-  { href: "/cases", label: "Triage Queue", icon: ClipboardList },
-  { href: "/cases/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/cases/incident-command", label: "Incident Command", icon: ShieldAlert },
+  { href: "/settings/team", label: "Team", icon: Users, permission: "members.view", match: (p: string) => p === "/settings/team" },
+  { href: "/settings/account", label: "Account", icon: UserCog, match: (p: string) => p === "/settings/account" },
 ];
 
 function NavGroup({
@@ -52,7 +48,7 @@ function NavGroup({
   onNavigate,
 }: {
   label: string;
-  links: { href: string; label: string; icon: React.ElementType; permission?: string }[];
+  links: { href: string; label: string; icon: React.ElementType; permission?: string; match: (pathname: string) => boolean }[];
   pathname: string;
   onNavigate?: () => void;
 }) {
@@ -66,16 +62,16 @@ function NavGroup({
       </p>
       {visible.map((link) => {
         const Icon = link.icon;
-        const active = pathname === link.href;
+        const active = link.match(pathname);
         return (
           <Link
             key={link.href}
             href={link.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
               active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-ires-red"
                 : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
             )}
           >
@@ -98,20 +94,14 @@ function SidebarNav({
   return (
     <nav aria-label="Primary" className="flex flex-col gap-1 px-3 pb-3">
       <NavGroup
-        label="Live Data"
-        links={LIVE_NAV_LINKS}
+        label="Monitor"
+        links={MONITOR_NAV_LINKS}
         pathname={pathname}
         onNavigate={onNavigate}
       />
       <NavGroup
         label="Workspace"
         links={WORKSPACE_NAV_LINKS}
-        pathname={pathname}
-        onNavigate={onNavigate}
-      />
-      <NavGroup
-        label="Cases"
-        links={CASES_NAV_LINKS}
         pathname={pathname}
         onNavigate={onNavigate}
       />
@@ -122,11 +112,9 @@ function SidebarNav({
 export function AnalystShell({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const pathname = usePathname();
-  const { data, dataUpdatedAt, errorUpdatedAt } = useCasesQuery();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  const isPollingDisconnected =
-    Boolean(data) && errorUpdatedAt > 0 && errorUpdatedAt > dataUpdatedAt;
+  const isPollingDisconnected = usePollingDisconnected();
 
   return (
     <div className="flex flex-1">
@@ -172,38 +160,28 @@ export function AnalystShell({ children }: { children: React.ReactNode }) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
+        <header className="sticky top-0 z-40 border-b border-border bg-card text-foreground">
           <div className="flex w-full items-center justify-between gap-3 px-4 py-3 sm:px-6">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(true)}
-                className="rounded-md p-1.5 text-sidebar-foreground/80 hover:bg-sidebar-accent/60 md:hidden"
+                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted md:hidden"
                 aria-label="Open navigation"
               >
                 <Menu className="size-5" aria-hidden="true" />
               </button>
-              <Wordmark inverted className="hidden h-7 shrink-0 sm:block md:hidden" />
+              <Wordmark className="hidden h-7 shrink-0 sm:block md:hidden" />
               <TenantSwitcher />
             </div>
             <div className="ml-auto flex shrink-0 items-center gap-3 sm:gap-4">
-              <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground" />
+              <ThemeToggle className="text-muted-foreground hover:bg-muted hover:text-foreground" />
               <UserMenu subtitle={user?.role} />
             </div>
           </div>
         </header>
 
-        {isPollingDisconnected && (
-          <div
-            role="status"
-            className="border-b border-amber-200 bg-amber-50 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200"
-          >
-            <div className="flex w-full items-center gap-2 px-4 py-2 sm:px-6">
-              <WifiOff className="size-4" aria-hidden="true" />
-              Reconnecting to Case API...
-            </div>
-          </div>
-        )}
+        <ReconnectBanner visible={isPollingDisconnected} />
 
         <div id="main-content" className="flex flex-1 flex-col p-4 sm:p-6">
           <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4">

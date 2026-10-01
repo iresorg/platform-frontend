@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
+import { AuthHeading, AuthSplitLayout, authButtonClass, authInputClass, authLabelClass } from "@/components/auth/auth-split-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,15 +64,15 @@ export default function RegisterPage() {
 
   return (
     <AuthSplitLayout
+      eyebrow="NEW ORGANIZATION"
       headline="Onboard your organization for round-the-clock protection."
       description="Register once to create your organization’s workspace — your security team gets full visibility, you get plain-language updates."
     >
-      <div className="flex flex-col gap-1.5">
-        <h2 className="text-3xl">Register your organization</h2>
-        <p className="text-sm text-muted-foreground">
-          Creates a workspace for your organization on the live backend.
-        </p>
-      </div>
+      <AuthHeading
+        eyebrow="GET STARTED"
+        title="Create your workspace"
+        subtitle="Creates a workspace for your organization on the live backend."
+      />
 
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -82,13 +82,13 @@ export default function RegisterPage() {
         <div className="flex flex-col gap-1.5">
           <Label
             htmlFor="organization_name"
-            className="text-xs font-bold tracking-wide text-muted-foreground uppercase"
+            className={authLabelClass}
           >
             Organization name
           </Label>
           <Input
             id="organization_name"
-            className="h-11"
+            className={authInputClass}
             aria-invalid={!!errors.organization_name}
             {...register("organization_name")}
           />
@@ -103,13 +103,13 @@ export default function RegisterPage() {
           <div className="flex flex-col gap-1.5">
             <Label
               htmlFor="first_name"
-              className="text-xs font-bold tracking-wide text-muted-foreground uppercase"
+              className={authLabelClass}
             >
               First name
             </Label>
             <Input
               id="first_name"
-              className="h-11"
+              className={authInputClass}
               aria-invalid={!!errors.first_name}
               {...register("first_name")}
             />
@@ -122,13 +122,13 @@ export default function RegisterPage() {
           <div className="flex flex-col gap-1.5">
             <Label
               htmlFor="last_name"
-              className="text-xs font-bold tracking-wide text-muted-foreground uppercase"
+              className={authLabelClass}
             >
               Last name
             </Label>
             <Input
               id="last_name"
-              className="h-11"
+              className={authInputClass}
               aria-invalid={!!errors.last_name}
               {...register("last_name")}
             />
@@ -143,7 +143,7 @@ export default function RegisterPage() {
         <div className="flex flex-col gap-1.5">
           <Label
             htmlFor="email"
-            className="text-xs font-bold tracking-wide text-muted-foreground uppercase"
+            className={authLabelClass}
           >
             Work email
           </Label>
@@ -151,7 +151,7 @@ export default function RegisterPage() {
             id="email"
             type="email"
             autoComplete="email"
-            className="h-11"
+            className={authInputClass}
             aria-invalid={!!errors.email}
             {...register("email")}
           />
@@ -163,7 +163,7 @@ export default function RegisterPage() {
         <div className="flex flex-col gap-1.5">
           <Label
             htmlFor="password"
-            className="text-xs font-bold tracking-wide text-muted-foreground uppercase"
+            className={authLabelClass}
           >
             Password
           </Label>
@@ -172,7 +172,7 @@ export default function RegisterPage() {
               id="password"
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
-              className="h-11 pr-10"
+              className={`${authInputClass} pr-11`}
               aria-invalid={!!errors.password}
               {...register("password")}
             />
@@ -181,7 +181,7 @@ export default function RegisterPage() {
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "Hide password" : "Show password"}
               aria-pressed={showPassword}
-              className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-3 text-muted-foreground transition-colors hover:text-foreground"
+              className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-3.5 text-muted-foreground transition-colors hover:text-foreground"
             >
               {showPassword ? (
                 <EyeOff className="size-4" aria-hidden="true" />
@@ -208,7 +208,7 @@ export default function RegisterPage() {
           type="submit"
           disabled={isSubmitting}
           size="lg"
-          className="mt-1 h-11 text-sm"
+          className={`mt-1 ${authButtonClass}`}
         >
           {isSubmitting ? "Creating workspace..." : "Create workspace"}
         </Button>

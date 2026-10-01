@@ -11,7 +11,10 @@ export interface AssignedAnalyst {
 }
 
 export interface CaseVerdict {
-  classification: VerdictClassification;
+  // The backend stores no classification (only the customer-facing
+  // resolution text), so this is absent on real data and never shown to
+  // customers anyway.
+  classification?: VerdictClassification;
   notes: string;
   customer_guidance: string;
 }
@@ -33,6 +36,7 @@ export interface RawAlertRef {
 
 export interface Case {
   id: string;
+  // Customer = the organization (tenant) the signed-in user belongs to.
   customer_id: string;
   customer_name: string;
   source: string;

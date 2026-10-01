@@ -21,7 +21,7 @@ export function SectionBackdrop({ className }: { className?: string }) {
       />
       <div className="absolute -top-32 -left-24 size-[26rem] rounded-full bg-brand-navy/10 blur-3xl dark:bg-brand-navy/25" />
       <div className="absolute top-1/3 -right-32 size-[24rem] rounded-full bg-brand-red/10 blur-3xl dark:bg-brand-red/15" />
-      <div className="absolute -bottom-40 left-1/3 size-[22rem] rounded-full bg-[#8b8fe8]/10 blur-3xl dark:bg-[#8b8fe8]/15" />
+      <div className="absolute -bottom-40 left-1/3 size-[22rem] rounded-full bg-ocean/10 blur-3xl dark:bg-ocean/15" />
     </div>
   );
 }

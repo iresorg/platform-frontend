@@ -11,7 +11,7 @@ import {
   useVulnerabilityPostureQuery,
 } from "@/lib/dashboard/queries";
 
-export default function LiveOverviewPage() {
+export default function OverviewPage() {
   const { data: kpis, isLoading: kpisLoading, isError: kpisError, error: kpisErr } = useDashboardKpisQuery();
   const { data: protection } = useProtectionStatusQuery();
   const { data: posture, isLoading: postureLoading } = useVulnerabilityPostureQuery();
@@ -19,10 +19,10 @@ export default function LiveOverviewPage() {
 
   const stats = kpis
     ? [
-        { label: "Unassigned Cases", value: kpis.unassigned_cases, icon: UserX, tint: "bg-amber-500/10 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400" },
-        { label: "Near SLA Breach", value: kpis.near_sla_breach, icon: Clock, tint: "bg-blue-500/10 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400" },
-        { label: "Critical", value: kpis.critical, icon: AlertTriangle, tint: "bg-destructive/10 text-destructive" },
-        { label: "Open Total", value: kpis.open_total, icon: ShieldCheck, tint: "bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-[#8b8fe8]" },
+        { label: "Unassigned Cases", value: kpis.unassigned_cases, icon: UserX, tint: "bg-tone-blue-bg text-tone-blue-fg" },
+        { label: "Near SLA Breach", value: kpis.near_sla_breach, icon: Clock, tint: "bg-tone-amber-bg text-tone-amber-fg" },
+        { label: "Critical", value: kpis.critical, icon: AlertTriangle, tint: "bg-tone-red-bg text-tone-red-fg" },
+        { label: "Open Total", value: kpis.open_total, icon: ShieldCheck, tint: "bg-cool-tint text-navy dark:bg-brand-tint dark:text-brand-soft" },
       ]
     : [];
 
@@ -30,9 +30,9 @@ export default function LiveOverviewPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl">Live Overview</h1>
+          <h1 className="text-xl">Overview</h1>
           <p className="text-sm text-muted-foreground">
-            Real KPIs, protection status and vulnerability posture from the live backend.
+            Where things stand right now: workload, protection and endpoint coverage.
           </p>
         </div>
         {protection && (
@@ -96,19 +96,19 @@ export default function LiveOverviewPage() {
             <Skeleton className="h-10 w-full" />
           ) : endpoints && endpoints.length > 0 ? (
             <ul className="flex flex-col gap-3">
-              {endpoints.map((ep) => {
+              {endpoints.filter((ep) => ep.total > 0).map((ep) => {
                 const pct = ep.total > 0 ? Math.round((ep.active / ep.total) * 100) : 0;
                 return (
                   <li key={ep.tenant_id} className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Active endpoints</span>
+                      <span className="text-muted-foreground">{ep.tenant_name ?? "Active endpoints"}</span>
                       <span className="font-medium tabular-nums">
                         {ep.active} / {ep.total}
                       </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
                       <div
-                        className="h-full rounded-full bg-emerald-500"
+                        className="h-full rounded-full bg-emerald-brand"
                         style={{ width: `${pct}%` }}
                       />
                     </div>

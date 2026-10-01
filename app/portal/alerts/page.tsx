@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useAuth } from "@/components/auth/auth-provider";
 import { CustomerStatusBadge } from "@/components/portal/customer-status-badge";
-import { PortalSubnav } from "@/components/portal/portal-subnav";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -36,7 +35,6 @@ export default function PortalAlertsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PortalSubnav />
 
       <div>
         <h1 className="text-xl">Alerts</h1>
@@ -93,7 +91,7 @@ export default function PortalAlertsPage() {
                   </TableCell>
                   <TableCell className="max-w-lg">
                     <Link
-                      href={`/portal/cases/${c.id}`}
+                      href={`/portal/incidents/${c.id}`}
                       className="text-sm hover:underline"
                     >
                       {describeEvidence(c)}

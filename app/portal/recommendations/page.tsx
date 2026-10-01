@@ -2,7 +2,6 @@
 
 import { ShieldCheck } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
-import { PortalSubnav } from "@/components/portal/portal-subnav";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCustomerCasesQuery } from "@/lib/cases/queries";
 
@@ -45,7 +44,6 @@ export default function PortalRecommendationsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PortalSubnav />
 
       <div>
         <h1 className="text-xl">Recommendations</h1>
@@ -67,7 +65,7 @@ export default function PortalRecommendationsPage() {
               key={rec.title}
               className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-sm"
             >
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-[#8b8fe8]">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-brand-soft">
                 <ShieldCheck className="size-4" aria-hidden="true" />
               </div>
               <div>

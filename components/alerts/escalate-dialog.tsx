@@ -82,7 +82,7 @@ export function EscalateDialog({
           toast.success(`Escalated to incident ${incident.id.slice(0, 8)}.`);
           setOpen(false);
           reset();
-          router.push(`/cases/incidents/${incident.id}`);
+          router.push(`/cases/${incident.id}`);
         },
         onError: (err) => {
           toast.error(

@@ -2,7 +2,8 @@ import { ApiError } from "@/lib/api-error";
 import { USE_MOCK_AUTH } from "@/lib/config";
 import { mockAccounts } from "@/lib/auth/mock-users";
 import { deriveRole } from "@/lib/auth/roles";
-import { realLogin } from "@/lib/auth/real-api";
+import { realLogin, verifyMfa } from "@/lib/auth/real-api";
+import type { LoginData } from "@/lib/auth/real-types";
 import { getMe } from "@/lib/tenants/api";
 import type { MeResponse } from "@/lib/tenants/types";
 import type { AuthUser, LoginCredentials, LoginResult } from "@/lib/auth/types";
@@ -30,6 +31,17 @@ function createMockToken(user: AuthUser): string {
     exp: Date.now() + 1000 * 60 * 60 * 8,
   });
   return `${header}.${payload}.mock`;
+}
+
+// Thrown when the password was right but the account has MFA on: the caller
+// asks for a code and finishes with completeMfaLogin().
+export class MfaRequiredError extends Error {
+  challengeToken: string;
+  constructor(challengeToken: string) {
+    super("Enter the code from your authenticator app.");
+    this.name = "MfaRequiredError";
+    this.challengeToken = challengeToken;
+  }
 }
 
 export function mapMe(me: MeResponse): AuthUser {
@@ -65,15 +77,23 @@ export async function login(
   const data = await realLogin({ ...credentials, device_name: "Web Client" });
 
   if (data.requires_mfa) {
-    throw new ApiError(
-      "This account requires MFA, which isn't supported by this login form yet.",
-      401
-    );
+    throw new MfaRequiredError(data.mfa_challenge_token ?? "");
   }
+  return finishRealLogin(data);
+}
+
+// Second step of an MFA sign-in: the code is a TOTP code or a recovery code.
+export async function completeMfaLogin(
+  challengeToken: string,
+  code: string
+): Promise<LoginResult> {
+  return finishRealLogin(await verifyMfa({ mfa_challenge_token: challengeToken, code: code.trim() }));
+}
+
+async function finishRealLogin(data: LoginData): Promise<LoginResult> {
   if (!data.access_token) {
     throw new ApiError("Login succeeded but the server returned no access token.", 500);
   }
-
   // Identity, tenant and permissions come from /me. The token has to be
   // passed explicitly — it isn't persisted until this function returns.
   const user = { ...mapMe(await getMe(data.access_token)), session_id: data.session_id };

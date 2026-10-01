@@ -5,7 +5,7 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
+import { AuthHeading, AuthSplitLayout, authButtonClass, authInputClass, authLabelClass } from "@/components/auth/auth-split-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,30 +43,28 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthSplitLayout
+      eyebrow="ACCOUNT RECOVERY"
       headline="Locked out? We'll get you back in."
       description="Enter the email you registered with and we'll send instructions to reset your password."
     >
-      <div className="flex flex-col gap-1.5">
-        <h2 className="text-3xl">Reset your password</h2>
-        <p className="text-sm text-muted-foreground">We&rsquo;ll email you a reset link.</p>
-      </div>
+      <AuthHeading eyebrow="ACCOUNT RECOVERY" title="Reset your password" subtitle="We’ll email you a reset link." />
 
       {sentMessage ? (
         <div className="flex flex-col gap-5">
-          <p role="status" className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+          <p role="status" className="rounded-md bg-tone-green-bg px-3 py-2 text-sm text-tone-green-fg">
             {sentMessage}
           </p>
-          <Button asChild variant="outline" size="lg" className="h-11">
+          <Button asChild variant="outline" size="lg" className="h-12 rounded-xl">
             <Link href="/login">Back to sign in</Link>
           </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email" className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
+            <Label htmlFor="email" className={authLabelClass}>
               Email
             </Label>
-            <Input id="email" type="email" autoComplete="email" className="h-11" aria-invalid={!!errors.email} {...register("email")} />
+            <Input id="email" type="email" autoComplete="email" className={authInputClass} aria-invalid={!!errors.email} {...register("email")} />
             {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
           </div>
           {formError && (
@@ -74,7 +72,7 @@ export default function ForgotPasswordPage() {
               {formError}
             </p>
           )}
-          <Button type="submit" disabled={isSubmitting} size="lg" className="mt-1 h-11 text-sm">
+          <Button type="submit" disabled={isSubmitting} size="lg" className={`mt-1 ${authButtonClass}`}>
             {isSubmitting ? "Sending..." : "Send reset link"}
           </Button>
         </form>

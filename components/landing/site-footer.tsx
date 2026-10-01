@@ -21,7 +21,7 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-brand-navy text-white">
+    <footer className="bg-navy text-white">
       <div className="mx-auto max-w-6xl px-6 py-16 sm:px-10">
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-[1.2fr_1fr_1fr]">
           <div className="flex flex-col gap-4">

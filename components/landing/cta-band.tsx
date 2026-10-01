@@ -4,7 +4,7 @@ import { Reveal } from "@/components/landing/reveal";
 
 export function CtaBand() {
   return (
-    <section className="relative overflow-hidden bg-brand-navy py-20 text-white sm:py-24">
+    <section className="relative overflow-hidden bg-navy py-20 text-white sm:py-24">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-brand-red/20 blur-3xl"

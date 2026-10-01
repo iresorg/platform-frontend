@@ -1,10 +1,8 @@
 import { Clock, Mail, Phone } from "lucide-react";
-import { PortalSubnav } from "@/components/portal/portal-subnav";
 
 export default function PortalSupportPage() {
   return (
     <div className="flex flex-col gap-4">
-      <PortalSubnav />
 
       <div>
         <h1 className="text-xl">Support</h1>
@@ -18,7 +16,7 @@ export default function PortalSupportPage() {
           href="mailto:soc@iresorg.com"
           className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/40"
         >
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-[#8b8fe8]">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-brand-soft">
             <Mail className="size-4" aria-hidden="true" />
           </div>
           <div>
@@ -31,7 +29,7 @@ export default function PortalSupportPage() {
           href="tel:+18005550199"
           className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/40"
         >
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-[#8b8fe8]">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-brand-soft">
             <Phone className="size-4" aria-hidden="true" />
           </div>
           <div>
@@ -42,7 +40,7 @@ export default function PortalSupportPage() {
       </div>
 
       <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-[#8b8fe8]">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-brand-soft">
           <Clock className="size-4" aria-hidden="true" />
         </div>
         <div>

@@ -12,20 +12,27 @@ export interface DashboardKpis {
   critical: number;
   quarantine_count: number;
   open_total: number;
+  // Cases whose customer couldn't be resolved — an agent group is
+  // misconfigured, which is an ops problem rather than a security one.
+  // Optional in the schema (defaults to 0), absent on some responses.
+  no_customer?: number;
 }
 
 export interface ProtectionStatus {
   protection_status: string;
   open_incident_count: number;
+  open_case_count?: number;
 }
 
 // Keys observed Title-cased, not lowercase like other enums in this API.
-export interface VulnerabilityPosture {
+export interface SeverityCounts {
   Critical: number;
   High: number;
   Medium: number;
   Low: number;
 }
+
+export type VulnerabilityPosture = SeverityCounts & { total?: number };
 
 // CONFIRMED — a per-tenant endpoint-coverage summary, not a per-device
 // list as first guessed. The sample response was doubly-nested
@@ -34,6 +41,10 @@ export interface VulnerabilityPosture {
 // is real (or whether it varies) isn't settled yet.
 export interface EndpointCoverage {
   tenant_id: string;
+  // The schema also returns these; older responses omit them.
+  customer_id?: string;
+  tenant_name?: string;
+  tenant_slug?: string;
   active: number;
   total: number;
 }

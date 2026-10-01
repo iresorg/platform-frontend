@@ -11,7 +11,7 @@ import { useSwitchTenantMutation } from "@/lib/tenants/queries";
 // Detail pages belong to one tenant's data — after switching they'd 404,
 // so fall back to their list page.
 const DETAIL_FALLBACKS: [string, string][] = [
-  ["/cases/incidents/", "/cases/incidents"],
+  ["/cases/", "/cases"],
   ["/cases/live-alerts/", "/cases/live-alerts"],
 ];
 

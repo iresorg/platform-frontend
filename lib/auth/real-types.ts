@@ -101,3 +101,14 @@ export interface AuthSession {
   expires_at: string;
   is_active: boolean;
 }
+
+export interface MfaSetupData {
+  secret: string;
+  provisioning_uri: string;
+}
+
+export interface MfaConfirmData {
+  message: string;
+  // Shown exactly once — each works a single time in place of a TOTP code.
+  recovery_codes: string[];
+}

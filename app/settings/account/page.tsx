@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { ChangePasswordForm } from "@/components/settings/change-password-form";
+import { MfaCard } from "@/components/settings/mfa-card";
 import { SessionsCard } from "@/components/settings/sessions-card";
 
 function Card({
@@ -61,6 +62,10 @@ export default function AccountPage() {
           <ChangePasswordForm />
         </Card>
       </div>
+
+      <Card title="Two-step verification" description="Add a second check at sign-in with an authenticator app.">
+        <MfaCard />
+      </Card>
 
       <Card
         title="Signed-in devices"

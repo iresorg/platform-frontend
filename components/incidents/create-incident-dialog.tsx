@@ -65,13 +65,13 @@ export function CreateIncidentDialog() {
       { ...values, source_type: "MANUAL" },
       {
         onSuccess: (incident) => {
-          toast.success("Incident created.");
+          toast.success("Case created.");
           setOpen(false);
           reset();
-          router.push(`/cases/incidents/${incident.id}`);
+          router.push(`/cases/${incident.id}`);
         },
         onError: (err) => {
-          toast.error(err instanceof Error ? err.message : "Failed to create incident.");
+          toast.error(err instanceof Error ? err.message : "Failed to create the case.");
         },
       }
     );
@@ -80,11 +80,11 @@ export function CreateIncidentDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>New incident</Button>
+        <Button>New case</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Open a manual incident</DialogTitle>
+          <DialogTitle>Open a manual case</DialogTitle>
           <DialogDescription>
             For investigations that didn&rsquo;t start from an alert.
           </DialogDescription>
@@ -160,7 +160,7 @@ export function CreateIncidentDialog() {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create incident"}
+              {isSubmitting ? "Creating..." : "Create case"}
             </Button>
           </DialogFooter>
         </form>

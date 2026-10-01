@@ -29,7 +29,7 @@ export function TenantSwitcher() {
         <DropdownMenuTrigger
           aria-label="Switch organization"
           disabled={isSwitching}
-          className="flex max-w-[12rem] cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-medium text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent/60 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60 sm:max-w-[16rem]"
+          className="flex max-w-[12rem] cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-medium text-foreground outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-60 sm:max-w-[16rem]"
         >
           <Building2 className="size-4 shrink-0" aria-hidden="true" />
           <span className="hidden truncate sm:inline">{user.tenant_name ?? "Organization"}</span>

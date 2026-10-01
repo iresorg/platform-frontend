@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { login as loginRequest, mapMe } from "@/lib/auth/api";
+import { completeMfaLogin, login as loginRequest, mapMe } from "@/lib/auth/api";
 import { realLogout } from "@/lib/auth/real-api";
 import { clearAuth, getStoredToken, getStoredUser, storeAuth } from "@/lib/auth/storage";
 import { getMe } from "@/lib/tenants/api";
@@ -20,6 +20,8 @@ interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<AuthUser>;
+  // Finishes a sign-in that stopped at the MFA prompt.
+  completeMfa: (challengeToken: string, code: string) => Promise<AuthUser>;
   logout: () => void;
   // Re-reads /me and updates the stored user — call after anything that
   // changes the active tenant or the user's permissions.
@@ -61,6 +63,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return loggedInUser;
   }, []);
 
+  const completeMfa = useCallback(async (challengeToken: string, code: string) => {
+    const { token, user: loggedInUser } = await completeMfaLogin(challengeToken, code);
+    storeAuth(token, loggedInUser);
+    setUser(loggedInUser);
+    return loggedInUser;
+  }, []);
+
   const logout = useCallback(() => {
     if (!USE_MOCK_AUTH) {
       // Best-effort — the real session lives server-side in the sessionid
@@ -84,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshSession }}>
+    <AuthContext.Provider value={{ user, isLoading, login, completeMfa, logout, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

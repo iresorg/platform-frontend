@@ -26,7 +26,7 @@ function formatTime(iso: string): string {
   });
 }
 
-export default function LiveAlertsPage() {
+export default function AlertsPage() {
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error } = useAlertsQuery({ page });
   const { data: stats } = useAlertStatsQuery();
@@ -36,15 +36,14 @@ export default function LiveAlertsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-xl">Live Alerts</h1>
+        <h1 className="text-xl">Alerts</h1>
         <p className="text-sm text-muted-foreground">
-          Raw detections streamed from the live detection backend.
-        </p>
+          Detections raised by your sensors, before they become cases.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <div className="flex items-center gap-4 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-[#8b8fe8]">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-brand-soft">
             <Radio className="size-5" aria-hidden="true" />
           </div>
           <div>
@@ -55,7 +54,7 @@ export default function LiveAlertsPage() {
           </div>
         </div>
         <div className="flex items-center gap-4 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-tone-amber-bg text-tone-amber-fg">
             <AlertTriangle className="size-5" aria-hidden="true" />
           </div>
           <div>

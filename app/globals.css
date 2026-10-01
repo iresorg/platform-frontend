@@ -35,6 +35,38 @@
   --color-brand-ink: var(--brand-ink);
   --color-brand-slate: var(--brand-slate);
   --color-brand-mist: var(--brand-mist);
+  --color-brand-soft: var(--brand-soft);
+  --color-navy: var(--navy);
+  --color-ires-red: var(--red);
+  --color-steel: var(--steel);
+  --color-sky: var(--sky);
+  --color-ocean: var(--ocean);
+  --color-blush: var(--blush);
+  --color-sunset: var(--sunset);
+  --color-emerald-brand: var(--emerald);
+  --color-purple-soft: var(--purple);
+  --color-cool-tint: var(--cool-tint);
+  --color-light-gray: var(--light-gray);
+  --color-amber-brand: var(--amber);
+  --color-heading: var(--heading);
+  --color-tone-blue-bg: var(--tone-blue-bg);
+  --color-tone-blue-fg: var(--tone-blue-fg);
+  --color-tone-blue-line: var(--tone-blue-line);
+  --color-tone-amber-bg: var(--tone-amber-bg);
+  --color-tone-amber-fg: var(--tone-amber-fg);
+  --color-tone-amber-line: var(--tone-amber-line);
+  --color-tone-orange-bg: var(--tone-orange-bg);
+  --color-tone-orange-fg: var(--tone-orange-fg);
+  --color-tone-orange-line: var(--tone-orange-line);
+  --color-tone-red-bg: var(--tone-red-bg);
+  --color-tone-red-fg: var(--tone-red-fg);
+  --color-tone-red-line: var(--tone-red-line);
+  --color-tone-green-bg: var(--tone-green-bg);
+  --color-tone-green-fg: var(--tone-green-fg);
+  --color-tone-green-line: var(--tone-green-line);
+  --color-tone-gray-bg: var(--tone-gray-bg);
+  --color-tone-gray-fg: var(--tone-gray-fg);
+  --color-tone-gray-line: var(--tone-gray-line);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -74,36 +106,60 @@
 }
 
 :root {
-  /* ires design system — palette primitives (light) */
-  --bg: #fafafa;
-  --surface: #ffffff;
-  --fg: #0a0a0a;
-  --gray-100: #f2f2f2;
-  --gray-200: #e8e8e8;
-  --gray-300: #c3c3c3;
-  --gray-400: #9d9d9d;
-  --gray-500: #787878;
-  --gray-600: #525252;
-  --gray-700: #393939;
-  --gray-800: #1f1f1f;
-  --text-muted: var(--gray-600);
-  --row-hover: var(--gray-100);
-  --danger: #e5484d;
-  --brand-1: #241a5e;
-  --brand-2: #4a2f8f;
-  --brand: #322680;
-  --brand-hover: #251c63;
-  --brand-gradient: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-  --brand-tint: #eeecfb;
-  --brand-shadow: rgba(50, 38, 128, 0.16);
+  /* iRES brand — main colours */
+  --navy: #0c0e5d;
+  --red: #d10f24;
+  --steel: #4a4a4a;
+  /* secondary palette — charts, tints and status accents only */
+  --sky: #90caf9;
+  --ocean: #195bff;
+  --blush: #f8bbd0;
+  --sunset: #ff7043;
+  --emerald: #4caf50;
+  --purple: #b39ddb;
+  --amber: #e0a800; /* Medium severity — the one accent outside the brand palette */
+  --heading: var(--navy);
+  --cool-tint: #e4e8f5;
+  --light-gray: #f2f2f2;
 
-  /* legacy brand-token names this repo's components already reference —
-     values now come from the palette primitives above */
+  /* surfaces (light) */
+  --bg: var(--light-gray);
+  --surface: #ffffff;
+  --fg: #000000;
+  --gray-100: #eef0f7;
+  --gray-200: #d9dceb;
+  --gray-300: #b9bdd2;
+  --gray-400: #9095ad;
+  --gray-500: #6c7086;
+  --gray-600: var(--steel);
+  --gray-700: #33333f;
+  --gray-800: #1e1e2b;
+  --text-muted: var(--steel);
+  --row-hover: #eef0f8;
+  --danger: var(--red);
+  --brand: var(--navy);
+  --brand-hover: #1a1d80;
+  --brand-soft: var(--navy);
+  --brand-tint: var(--cool-tint);
+  --brand-1: var(--navy);
+  --brand-2: #1a1d80;
+  --brand-gradient: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  --brand-shadow: rgba(12, 14, 93, 0.16);
+
+  /* legacy names components already reference */
   --brand-navy: var(--brand);
   --brand-red: var(--danger);
   --brand-ink: var(--fg);
   --brand-slate: var(--text-muted);
   --brand-mist: var(--brand-tint);
+
+  /* semantic tones — one place decides what "warning" or "critical" looks like */
+  --tone-blue-bg: #dce7ff;   --tone-blue-fg: #0f3fa8;   --tone-blue-line: #a9c2ff;
+  --tone-amber-bg: #fff1bf;  --tone-amber-fg: #6b4e00;  --tone-amber-line: #e8c64a;
+  --tone-orange-bg: #ffe0d4; --tone-orange-fg: #a63a12; --tone-orange-line: #ffa98a;
+  --tone-red-bg: #fad9dd;    --tone-red-fg: #a00c1c;    --tone-red-line: #ee8a96;
+  --tone-green-bg: #dcf0dd;  --tone-green-fg: #2a6b2e;  --tone-green-line: #9ad09d;
+  --tone-gray-bg: #e9e9ee;   --tone-gray-fg: var(--steel); --tone-gray-line: #c4c4ce;
 
   --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
   --font-heading: var(--font-display);
@@ -118,56 +174,64 @@
   --popover-foreground: var(--fg);
   --primary: var(--brand);
   --primary-foreground: #ffffff;
-  --secondary: var(--brand-tint);
-  --secondary-foreground: var(--brand);
-  --muted: var(--gray-100);
+  --secondary: var(--cool-tint);
+  --secondary-foreground: var(--navy);
+  --muted: var(--cool-tint);
   --muted-foreground: var(--text-muted);
-  --accent: var(--gray-100);
-  --accent-foreground: var(--brand);
+  --accent: var(--cool-tint);
+  --accent-foreground: var(--navy);
   --destructive: var(--danger);
   --destructive-foreground: #ffffff;
   --border: var(--gray-200);
   --input: var(--gray-200);
-  --ring: var(--brand);
-  --chart-1: var(--brand);
-  --chart-2: var(--danger);
-  --chart-3: var(--text-muted);
-  --chart-4: var(--gray-400);
-  --chart-5: var(--gray-300);
+  --ring: var(--ocean);
+  --chart-1: var(--navy);
+  --chart-2: var(--red);
+  --chart-3: var(--ocean);
+  --chart-4: var(--sky);
+  --chart-5: var(--steel);
   --radius: 0.5rem;
-  --sidebar: var(--brand-1);
+  --sidebar: var(--navy);
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: var(--brand-1);
-  --sidebar-accent: var(--brand-2);
+  --sidebar-primary-foreground: var(--navy);
+  --sidebar-accent: #1a1d80;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: var(--brand-2);
-  --sidebar-ring: var(--danger);
+  --sidebar-border: #1a1d80;
+  --sidebar-ring: var(--red);
 }
 
 :root[data-theme="dark"] {
-  /* ires design system — palette primitives (dark) */
-  --bg: #0a0a0a;
-  --surface: #161616;
-  --fg: #fafafa;
-  --gray-100: #1a1a1a;
-  --gray-200: #363636;
-  --gray-300: #535353;
-  --gray-400: #6f6f6f;
-  --gray-500: #8c8c8c;
-  --gray-600: #a8a8a8;
-  --gray-700: #c7c7c7;
-  --gray-800: #e6e6e6;
+  /* surfaces (dark) — navy-tinted so the brand carries through */
+  --bg: #07081c;
+  --surface: #0f1130;
+  --fg: #f2f2f2;
+  --gray-100: #171a3d;
+  --gray-200: #2a2e5c;
+  --gray-300: #3b4078;
+  --gray-400: #6a70a8;
+  --gray-500: #9096c4;
+  --gray-600: #b8bcd8;
+  --gray-700: #d3d5e8;
+  --gray-800: #e9eaf5;
   --text-muted: var(--gray-600);
-  --row-hover: var(--gray-100);
-  --danger: #f2555a;
-  --brand-1: #382a7a;
-  --brand-2: #6b4ac2;
-  --brand: #6250b8;
-  --brand-hover: #7a68cc;
-  --brand-gradient: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-  --brand-tint: #211a3d;
-  --brand-shadow: rgba(98, 80, 184, 0.28);
+  --row-hover: #171a3d;
+  --danger: #f0475a;
+  --heading: #ffffff;
+  /* navy can't carry buttons or icons on a dark ground, so the brand
+     colour steps up to Ocean Blue and text accents to Sky Blue */
+  --brand: var(--ocean);
+  --brand-hover: #4b82ff;
+  --brand-soft: var(--sky);
+  --brand-tint: #14184a;
+  --brand-shadow: rgba(25, 91, 255, 0.28);
+
+  --tone-blue-bg: #10245a;   --tone-blue-fg: #90caf9;   --tone-blue-line: #2a4a9a;
+  --tone-amber-bg: #3a2e06;  --tone-amber-fg: #f2c94c;  --tone-amber-line: #7a611a;
+  --tone-orange-bg: #45210f; --tone-orange-fg: #ff9a78; --tone-orange-line: #8a4326;
+  --tone-red-bg: #4a1019;    --tone-red-fg: #ff8d9b;    --tone-red-line: #8a2634;
+  --tone-green-bg: #123a1a;  --tone-green-fg: #7fd68a;  --tone-green-line: #2a6b34;
+  --tone-gray-bg: #23264a;   --tone-gray-fg: #c3c6dc;   --tone-gray-line: #3c4070;
 
   --brand-navy: var(--brand);
   --brand-red: var(--danger);
@@ -190,23 +254,29 @@
   --accent: var(--gray-100);
   --accent-foreground: var(--fg);
   --destructive: var(--danger);
-  --destructive-foreground: var(--bg);
+  --destructive-foreground: #ffffff;
   --border: var(--gray-200);
   --input: var(--gray-200);
-  --ring: var(--brand);
-  --chart-1: var(--brand);
+  --ring: var(--sky);
+  --chart-1: var(--ocean);
   --chart-2: var(--danger);
-  --chart-3: var(--text-muted);
-  --chart-4: var(--gray-400);
-  --chart-5: var(--gray-300);
-  --sidebar: var(--surface);
-  --sidebar-foreground: var(--fg);
-  --sidebar-primary: var(--brand);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--gray-200);
-  --sidebar-accent-foreground: var(--fg);
-  --sidebar-border: var(--gray-200);
+  --chart-3: var(--sky);
+  --chart-4: var(--purple);
+  --chart-5: var(--gray-600);
+  --sidebar: var(--navy);
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: var(--navy);
+  --sidebar-accent: #1a1d80;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1a1d80;
   --sidebar-ring: var(--danger);
+}
+
+/* Urgent badges pulse a soft ring, not their opacity, so the text stays legible. */
+@keyframes badge-ring {
+  0%, 100% { box-shadow: 0 0 0 0 var(--tone-amber-line); }
+  50% { box-shadow: 0 0 0 4px transparent; }
 }
 
 @layer base {
@@ -223,6 +293,6 @@
   h2,
   h3,
   h4 {
-    @apply font-heading font-bold tracking-tight;
+    @apply font-heading font-bold tracking-tight text-heading;
   }
 }

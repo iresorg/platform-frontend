@@ -46,7 +46,7 @@ export function CoverageGrid() {
             <Reveal key={title} delay={i * 0.05}>
               <Card className="h-full ring-border/60">
                 <CardHeader>
-                  <div className="mb-2 flex size-11 items-center justify-center rounded-xl bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-[#8b8fe8]">
+                  <div className="mb-2 flex size-11 items-center justify-center rounded-xl bg-brand-navy/10 text-brand-navy dark:bg-brand-navy/20 dark:text-brand-soft">
                     <Icon className="size-5" aria-hidden="true" />
                   </div>
                   <CardTitle className="text-lg">{title}</CardTitle>

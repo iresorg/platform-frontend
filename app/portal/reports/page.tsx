@@ -4,7 +4,6 @@ import { Suspense, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useQueries } from "@tanstack/react-query";
 import { useAuth } from "@/components/auth/auth-provider";
-import { PortalSubnav } from "@/components/portal/portal-subnav";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchCaseEvents } from "@/lib/cases/api";
 import { caseKeys, useCustomerCasesQuery } from "@/lib/cases/queries";
@@ -85,7 +84,6 @@ export default function PortalReportsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PortalSubnav />
 
       <div>
         <h1 className="text-xl">Reports</h1>

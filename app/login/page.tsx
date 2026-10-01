@@ -13,6 +13,7 @@ import { MfaStep } from "@/components/auth/mfa-step";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AppLoadingScreen } from "@/components/shared/app-loading-screen";
 import { USE_MOCK_AUTH } from "@/lib/config";
 import { mockAccounts } from "@/lib/auth/mock-users";
 import { MfaRequiredError } from "@/lib/auth/api";
@@ -196,6 +197,13 @@ function LoginForm() {
         </Link>
       </form>
 
+      <p className="text-center text-sm text-muted-foreground">
+        New organization?{" "}
+        <Link href="/register" className="font-medium text-primary hover:underline">
+          Create a workspace
+        </Link>
+      </p>
+
       {USE_MOCK_AUTH && (
         <div className="rounded-xl border border-border bg-muted/60 px-4 py-3 text-xs text-muted-foreground">
           <p className="mb-1.5 font-bold text-secondary-foreground">
@@ -220,7 +228,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<AppLoadingScreen />}>
       <LoginForm />
     </Suspense>
   );

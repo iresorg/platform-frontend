@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { AuthHeading, AuthSplitLayout, authButtonClass, authInputClass, authLabelClass } from "@/components/auth/auth-split-layout";
+import { AppLoadingScreen } from "@/components/shared/app-loading-screen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -95,7 +96,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<AppLoadingScreen />}>
       <ResetPasswordForm />
     </Suspense>
   );

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/auth-provider";
+import { AppLoadingScreen } from "@/components/shared/app-loading-screen";
 import { roleHome } from "@/lib/auth/roles";
 import type { UserRole } from "@/lib/auth/types";
 
@@ -29,14 +30,7 @@ export function RequireRole({
   }, [isLoading, user, router, rolesKey]);
 
   if (isLoading || !user || !roles.includes(user.role)) {
-    return (
-      <div
-        role="status"
-        className="flex flex-1 items-center justify-center p-16 text-sm text-muted-foreground"
-      >
-        Loading...
-      </div>
-    );
+    return <AppLoadingScreen />;
   }
 
   return <>{children}</>;

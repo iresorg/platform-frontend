@@ -7,6 +7,13 @@ function apiUrl(path: string): string {
   return `${base}${path}`;
 }
 
+// Every auth failure the backend answers with — confirmed live: a missing
+// token is 401 NOT_AUTHENTICATED, an expired or invalid one is 401
+// AUTHENTICATION_FAILED. Status alone (401) is now enough on its own; this
+// is kept as a defensive fallback in case something ever answers 403
+// instead with one of these codes.
+const AUTH_FAILURE_CODES = new Set(["NOT_AUTHENTICATED", "AUTHENTICATION_FAILED"]);
+
 // Single fetch wrapper for every real-backend module. The backend
 // authenticates with `Authorization: Bearer <access_token>` (returned by
 // POST /auth/login) — despite the `--cookie sessionid=` in its curl
@@ -49,10 +56,9 @@ export async function apiRequest<T>(
       // response wasn't JSON — fall back to statusText
     }
 
-    // The backend answers a missing/invalid token with 403 NOT_AUTHENTICATED
-    // (not 401). Only treat it as an expired session if we actually sent a
-    // token — otherwise a failed login attempt would look like one.
-    if (authToken && (res.status === 401 || code === "NOT_AUTHENTICATED")) {
+    // Only treat it as an expired session if we actually sent a token —
+    // otherwise a failed login attempt would look like one.
+    if (authToken && (res.status === 401 || (code && AUTH_FAILURE_CODES.has(code)))) {
       clearAuth();
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("ires:unauthorized"));

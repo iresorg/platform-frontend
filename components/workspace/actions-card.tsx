@@ -4,16 +4,60 @@ import { useState } from "react";
 import { ArrowUpCircle, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth/auth-provider";
+import { Can } from "@/components/auth/can";
 import { EscalateDialog } from "@/components/workspace/escalate-dialog";
 import { VerdictDialog } from "@/components/workspace/verdict-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCan } from "@/hooks/use-can";
 import { useAssignCaseMutation, useChangeIncidentStatusMutation } from "@/lib/incidents/queries";
 import type { Incident, IncidentStatus } from "@/lib/incidents/types";
+import { useMembersQuery } from "@/lib/tenants/queries";
+
+// `GET /analysts` from the guide doesn't exist — this reads the real
+// tenant members list instead, which carries enough (id, email) for a
+// reassignment target even though it isn't tier-filtered the way a
+// dedicated endpoint would be.
+function ReassignSelect({ incident }: { incident: Incident }) {
+  const { user } = useAuth();
+  const { data: members } = useMembersQuery(user?.customer_id);
+  const assignMutation = useAssignCaseMutation();
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label id="reassign-label">Assign to&hellip;</Label>
+      <Select
+        value=""
+        onValueChange={(userId) => {
+          const member = members?.find((m) => m.user.id === userId);
+          assignMutation.mutate(
+            { id: incident.id, userId },
+            {
+              onSuccess: () => toast.success(`Assigned to ${member?.user.email ?? "the selected analyst"}.`),
+              onError: (err) => toast.error(err instanceof Error ? err.message : "Couldn't reassign the case."),
+            }
+          );
+        }}
+      >
+        <SelectTrigger aria-labelledby="reassign-label" size="sm">
+          <SelectValue placeholder="Choose an analyst" />
+        </SelectTrigger>
+        <SelectContent>
+          {members?.map((m) => (
+            <SelectItem key={m.id} value={m.user.id}>
+              {`${m.user.first_name} ${m.user.last_name}`.trim() || m.user.email}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
 
 export function ActionsCard({ incident }: { incident: Incident }) {
   const { user } = useAuth();
+  const can = useCan();
   const [verdictOpen, setVerdictOpen] = useState(false);
   const [escalateOpen, setEscalateOpen] = useState(false);
   const mutation = useChangeIncidentStatusMutation();
@@ -72,11 +116,16 @@ export function ActionsCard({ incident }: { incident: Incident }) {
               <UserPlus aria-hidden="true" />
               {assignedToMe ? "Assigned to you" : assignMutation.isPending ? "Assigning..." : "Assign to me"}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setEscalateOpen(true)}>
-              <ArrowUpCircle aria-hidden="true" />
-              Escalate
-            </Button>
+            {/* Guide A4/1.3: only Tier 1 escalates — Tier 2 is where
+                escalations land, so escalating further doesn't apply. */}
+            <Can code="case.escalate">
+              <Button variant="outline" size="sm" onClick={() => setEscalateOpen(true)}>
+                <ArrowUpCircle aria-hidden="true" />
+                Escalate
+              </Button>
+            </Can>
           </div>
+          {can("case.assign_other") && <ReassignSelect incident={incident} />}
           <Button onClick={() => setVerdictOpen(true)}>Resolve case</Button>
         </div>
       )}

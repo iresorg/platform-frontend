@@ -4,7 +4,7 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 // the sign-in page) only exists behind this switch and is off.
 export const USE_MOCK_AUTH: boolean = false;
 
-// How the queue/case queries in lib/cases/queries.ts learn about new data.
+// How the queue/case queries in lib/incidents/queries.ts learn about new data.
 // Two backend-integration docs disagree here — one wants HTTP polling
 // every 15-30s, the other wants a WebSocket/SSE push channel — so this
 // is deliberately the single switch, not a hardcoded interval, so the

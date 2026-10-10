@@ -7,8 +7,10 @@ import { CopyButton } from "@/components/shared/copy-button";
 import { IntelBadge } from "@/components/shared/intel-badge";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { SeverityBadge } from "@/components/shared/severity-badge";
+import { ArrowUpCircle } from "lucide-react";
 import { SLABadge } from "@/components/shared/sla-badge";
 import { StatusPill } from "@/components/shared/status-pill";
+import { classifyNote } from "@/lib/incidents/enrichment";
 import type { Incident } from "@/lib/incidents/types";
 
 export function CaseHeader({ incident }: { incident: Incident }) {
@@ -16,6 +18,10 @@ export function CaseHeader({ incident }: { incident: Incident }) {
   const { user } = useAuth();
   const done = incident.status === "RESOLVED" || incident.status === "CLOSED";
   const text = incident.summary || incident.description;
+  // There's no real `escalation` object (guide 2.2's proposal) — this
+  // reads it back out of the timeline instead, same as the audit trail
+  // already classifies "escalated" notes.
+  const escalation = [...incident.notes].reverse().find((n) => classifyNote(n) === "escalated");
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
@@ -58,6 +64,14 @@ export function CaseHeader({ incident }: { incident: Incident }) {
         <span>{incident.assigned_to_email ? `assigned to ${incident.assigned_to_email}` : "unassigned"}</span>
       </p>
       {text && <p className="text-sm">{text}</p>}
+      {escalation && (
+        <p className="flex items-start gap-1.5 rounded-lg border border-tone-orange-line bg-tone-orange-bg px-3 py-2 text-sm text-tone-orange-fg">
+          <ArrowUpCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <span>
+            Escalated by {escalation.author_email}: {escalation.content.replace(/^Case escalated to \w+\.\s*/i, "")}
+          </span>
+        </p>
+      )}
     </div>
   );
 }

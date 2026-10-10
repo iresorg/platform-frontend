@@ -53,6 +53,11 @@ export interface MeResponse {
 export interface SwitchTenantResponse {
   message: string;
   active_tenant: Tenant;
+  // Scoped to the new tenant — confirmed live. The old token keeps working
+  // (not revoked) but still reports the old tenant, since it's just an
+  // unrelated JWT snapshot; this new one is what the caller should
+  // actually switch to using.
+  access_token?: string;
 }
 
 // CONFIRMED from a live response. `id` is the membership id (used in the

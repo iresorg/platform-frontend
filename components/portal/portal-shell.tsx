@@ -5,13 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  FileBarChart,
   History,
   LayoutDashboard,
-  Lightbulb,
-  LifeBuoy,
+  ListChecks,
   Menu,
   MonitorCheck,
-  Radio,
+  ShieldCheck,
+  Users,
   X,
 } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
@@ -19,26 +20,31 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { TenantSwitcher } from "@/components/tenants/tenant-switcher";
 import { UserMenu } from "@/components/user-menu";
 import { useAuth } from "@/components/auth/auth-provider";
+import { useCan } from "@/hooks/use-can";
 import { cn } from "cn";
 
 // Same shield-and-rail sidebar pattern as the analyst shell, so the two
 // apps feel like one product, but the client portal still gets its own
 // chrome per the guide: its own set of sections, and a red top rule on
-// the content header that the analyst side doesn't have.
+// the content header that the analyst side doesn't have. P1-P10 per the
+// target guide §4 — `permission` gates tenant_admin-only screens.
 const NAV_LINKS = [
   { href: "/portal", label: "Overview", icon: LayoutDashboard, match: (p: string) => p === "/portal" },
   { href: "/portal/incidents", label: "Incidents", icon: History, match: (p: string) => p.startsWith("/portal/incidents") },
-  { href: "/portal/devices", label: "Devices", icon: MonitorCheck, match: (p: string) => p.startsWith("/portal/devices") },
-  { href: "/portal/alerts", label: "Alerts", icon: Radio, match: (p: string) => p.startsWith("/portal/alerts") },
-  { href: "/portal/reports", label: "Reports", icon: BarChart3, match: (p: string) => p.startsWith("/portal/reports") },
-  { href: "/portal/recommendations", label: "Recommendations", icon: Lightbulb, match: (p: string) => p.startsWith("/portal/recommendations") },
-  { href: "/portal/support", label: "Support", icon: LifeBuoy, match: (p: string) => p.startsWith("/portal/support") },
+  { href: "/portal/devices", label: "Devices", icon: MonitorCheck, match: (p: string) => p.startsWith("/portal/devices") && p !== "/portal/devices/add" },
+  { href: "/portal/devices/add", label: "Add devices", icon: MonitorCheck, permission: "portal.devices.enrol", match: (p: string) => p === "/portal/devices/add" },
+  { href: "/portal/vulnerabilities", label: "Vulnerabilities", icon: ShieldCheck, match: (p: string) => p.startsWith("/portal/vulnerabilities") },
+  { href: "/portal/compliance", label: "Compliance", icon: FileBarChart, permission: "portal.compliance.read", match: (p: string) => p.startsWith("/portal/compliance") },
+  { href: "/portal/action-plan", label: "Action plan", icon: ListChecks, match: (p: string) => p.startsWith("/portal/action-plan") },
+  { href: "/portal/reports", label: "Reports", icon: BarChart3, permission: "portal.report.read", match: (p: string) => p.startsWith("/portal/reports") },
+  { href: "/portal/users", label: "Users", icon: Users, permission: "portal.user.manage", match: (p: string) => p.startsWith("/portal/users") },
 ];
 
 function SidebarNav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  const can = useCan();
   return (
     <nav aria-label="Primary" className="flex flex-col gap-1 px-3 pb-3">
-      {NAV_LINKS.map((link) => {
+      {NAV_LINKS.filter((l) => !l.permission || can(l.permission)).map((link) => {
         const Icon = link.icon;
         const active = link.match(pathname);
         return (

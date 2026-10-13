@@ -20,15 +20,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { RelativeTime } from "@/components/shared/relative-time";
+import { useAuth } from "@/components/auth/auth-provider";
+import { useTenantSwitch } from "@/components/tenants/use-tenant-switch";
 import {
-  useMockCreateTokenMutation,
-  useMockEnrolmentTokensQuery,
-  useMockRevokeTokenMutation,
-} from "@/lib/mocks/enrolment";
+  useCreateFleetTokenMutation,
+  useFleetTokensQuery,
+  useRevokeFleetTokenMutation,
+} from "@/lib/fleet/queries";
+import type { EnrollmentToken } from "@/lib/fleet/types";
 import { useMockConnectorQuery, useMockTenantScopeQuery } from "@/lib/mocks/tenant-extras";
 import { useTenantQuery } from "@/lib/tenants/queries";
 import { useCan } from "@/hooks/use-can";
 import { cn } from "cn";
+
+function tokenStatus(t: EnrollmentToken): "active" | "expired" | "revoked" | "full" {
+  if (t.is_revoked) return "revoked";
+  if (new Date(t.expires_at).getTime() < Date.now()) return "expired";
+  if (t.devices_enrolled >= t.max_devices) return "full";
+  return "active";
+}
 
 type Tab = "overview" | "scope" | "enrolment" | "connectors";
 
@@ -78,44 +88,66 @@ function ScopeTab({ tenantId }: { tenantId: string }) {
   );
 }
 
-function EnrolmentTab() {
-  const { data: tokens, isLoading } = useMockEnrolmentTokensQuery();
-  const revoke = useMockRevokeTokenMutation();
-  const createMutation = useMockCreateTokenMutation();
+function SwitchIntoTenantPrompt({ tenantId, tenantName }: { tenantId: string; tenantName: string }) {
+  const { switchTo, isSwitching } = useTenantSwitch();
+  return (
+    <section className="rounded-xl border border-border bg-card p-5 text-center shadow-sm">
+      <p className="text-sm text-muted-foreground">
+        Enrolment tokens are scoped to whichever tenant your session is switched into. Switch into {tenantName} to view and manage its devices.
+      </p>
+      <Button className="mt-3" size="sm" disabled={isSwitching} onClick={() => void switchTo(tenantId)}>
+        {isSwitching ? "Switching..." : `Switch into ${tenantName}`}
+      </Button>
+    </section>
+  );
+}
+
+// The real /fleet/tokens/ endpoint has no tenant-override param — it's
+// scoped to whichever tenant the caller's session is currently switched
+// into (confirmed live). So this only renders once the caller has
+// confirmed (via EnrolmentTab below) that staff is switched into this
+// tenant; otherwise it would silently show/act on staff's own tenant
+// context instead of the one in the URL.
+function EnrolmentManager() {
+  const { data: tokens, isLoading } = useFleetTokensQuery();
+  const revoke = useRevokeFleetTokenMutation();
+  const createMutation = useCreateFleetTokenMutation();
   const [createOpen, setCreateOpen] = useState(false);
-  const [command, setCommand] = useState<string | null>(null);
+  const [result, setResult] = useState<EnrollmentToken | null>(null);
 
   async function create() {
-    const res = await createMutation.mutateAsync({ label: "Staff-issued token", os: "windows", cap: 10 });
-    setCommand(res.command);
+    const token = await createMutation.mutateAsync({ name: "Staff-issued token", max_devices: 10 });
+    setResult(token);
   }
 
   return (
     <section className="flex flex-col gap-3">
-      <MockDataBanner endpoint="GET/POST /tenants/:id/enrolment-tokens" />
       <div className="flex justify-end">
-        <Button size="sm" onClick={() => { setCreateOpen(true); setCommand(null); }}>Create token</Button>
+        <Button size="sm" onClick={() => { setCreateOpen(true); setResult(null); }}>Create token</Button>
       </div>
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <div className="flex flex-col divide-y divide-border">
           {isLoading && <p className="p-5 text-sm text-muted-foreground">Loading...</p>}
-          {tokens?.map((t) => (
-            <div key={t.id} className="flex items-center justify-between gap-3 px-5 py-3">
-              <div className="flex items-center gap-3">
-                <Monitor className="size-4 text-muted-foreground" aria-hidden="true" />
-                <div>
-                  <p className="text-sm font-medium">{t.label}</p>
-                  <p className="text-xs text-muted-foreground">{t.used} of {t.device_cap} used · expires <RelativeTime iso={t.expires_at} /></p>
+          {tokens?.map((t) => {
+            const status = tokenStatus(t);
+            return (
+              <div key={t.id} className="flex items-center justify-between gap-3 px-5 py-3">
+                <div className="flex items-center gap-3">
+                  <Monitor className="size-4 text-muted-foreground" aria-hidden="true" />
+                  <div>
+                    <p className="text-sm font-medium">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.devices_enrolled} of {t.max_devices} used · expires <RelativeTime iso={t.expires_at} /></p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ColorBadge tone={status === "active" ? "emerald" : status === "expired" || status === "full" ? "slate" : "red"} variant="outline">{status}</ColorBadge>
+                  {status === "active" && (
+                    <Button variant="ghost" size="sm" onClick={() => revoke.mutate(t.id, { onSuccess: () => toast.success("Revoked.") })}>Revoke</Button>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <ColorBadge tone={t.status === "active" ? "emerald" : t.status === "expired" ? "slate" : "red"} variant="outline">{t.status}</ColorBadge>
-                {t.status === "active" && (
-                  <Button variant="ghost" size="sm" onClick={() => revoke.mutate(t.id, { onSuccess: () => toast.success("Revoked.") })}>Revoke</Button>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -125,13 +157,13 @@ function EnrolmentTab() {
             <DialogTitle>Create enrolment token</DialogTitle>
             <DialogDescription>Windows install command, single machine.</DialogDescription>
           </DialogHeader>
-          {command ? (
-            <SecretOnce label="install command" value={command} />
+          {result ? (
+            <SecretOnce label="install command" value={result.install_commands.windows} />
           ) : (
-            <p className="text-sm text-muted-foreground">Creating a 10-device Windows token for this tenant.</p>
+            <p className="text-sm text-muted-foreground">Creating a 10-device token for this tenant.</p>
           )}
           <DialogFooter>
-            {command ? (
+            {result ? (
               <Button onClick={() => setCreateOpen(false)}>Done</Button>
             ) : (
               <>
@@ -146,6 +178,13 @@ function EnrolmentTab() {
       </Dialog>
     </section>
   );
+}
+
+function EnrolmentTab({ tenantId, tenantName }: { tenantId: string; tenantName: string }) {
+  const { user } = useAuth();
+  const isActiveTenant = user?.customer_id === tenantId;
+  if (!isActiveTenant) return <SwitchIntoTenantPrompt tenantId={tenantId} tenantName={tenantName} />;
+  return <EnrolmentManager />;
 }
 
 function ConnectorsTab({ tenantId }: { tenantId: string }) {
@@ -177,6 +216,7 @@ function ConnectorsTab({ tenantId }: { tenantId: string }) {
 export default function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const can = useCan();
+  const { data: tenant } = useTenantQuery(id);
   const [tab, setTab] = useState<Tab>("overview");
 
   const tabs: { id: Tab; label: string; show: boolean }[] = [
@@ -218,7 +258,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
 
       {tab === "overview" && <OverviewTab tenantId={id} />}
       {tab === "scope" && <ScopeTab tenantId={id} />}
-      {tab === "enrolment" && can("tenant.tokens") && <EnrolmentTab />}
+      {tab === "enrolment" && can("tenant.tokens") && <EnrolmentTab tenantId={id} tenantName={tenant?.name ?? "this tenant"} />}
       {tab === "connectors" && <ConnectorsTab tenantId={id} />}
     </div>
     </RequirePermission>

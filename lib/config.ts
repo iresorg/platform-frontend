@@ -1,5 +1,21 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+export const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+// Tenants allowed to see mock/demo data in production (sales demos,
+// internal walkthroughs) even though real tenant users otherwise can't —
+// see hooks/use-mock-visible.ts. Comma-separated tenant ids.
+const DEMO_TENANT_IDS = new Set(
+  (process.env.NEXT_PUBLIC_DEMO_TENANT_IDS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+);
+
+export function isDemoTenant(tenantId: string | undefined): boolean {
+  return Boolean(tenantId && DEMO_TENANT_IDS.has(tenantId));
+}
+
 // Everything talks to the real backend. The mock login (demo accounts on
 // the sign-in page) only exists behind this switch and is off.
 export const USE_MOCK_AUTH: boolean = false;

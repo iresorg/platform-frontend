@@ -6,6 +6,7 @@ import { FileBarChart, Loader2 } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FileDownload } from "@/components/shared/file-download";
 import { MockDataBanner } from "@/components/shared/mock-data-banner";
+import { MockGate } from "@/components/shared/mock-gate";
 import { ColorBadge } from "@/components/ui/color-badge";
 import { mockDownloadReport, useMockReportsQuery } from "@/lib/mocks/reports";
 
@@ -20,6 +21,7 @@ export default function PortalReportsPage() {
         <p className="text-sm text-muted-foreground">Monthly and executive summaries prepared by your security team.</p>
       </div>
 
+      <MockGate>
       <MockDataBanner endpoint="GET /portal/reports" />
 
       {!isLoading && reports?.length === 0 ? (
@@ -49,6 +51,7 @@ export default function PortalReportsPage() {
           </div>
         </div>
       )}
+      </MockGate>
     </div>
     </RequirePermission>
   );

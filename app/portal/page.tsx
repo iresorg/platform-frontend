@@ -11,6 +11,7 @@ import { MockDataBanner } from "@/components/shared/mock-data-banner";
 import { SkeletonCard, SkeletonTable } from "@/components/shared/skeletons";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useMockVisible } from "@/hooks/use-mock-visible";
 import { useMockPostureQuery } from "@/lib/mocks/posture";
 import { downloadPortalCasesCsv } from "@/lib/portal/export-csv";
 import { CUSTOMER_STATUS_LABEL, CUSTOMER_STATUS_TONE } from "@/lib/portal/format";
@@ -36,6 +37,7 @@ function formatDate(iso: string): string {
 // names or severity numbers anywhere in what's rendered.
 export default function PortalPage() {
   const router = useRouter();
+  const mockVisible = useMockVisible();
   const { data: overview, dataUpdatedAt } = usePortalOverviewQuery();
   const { data: devices } = usePortalEndpointsQuery();
   const { data: posture } = useMockPostureQuery();
@@ -70,7 +72,7 @@ export default function PortalPage() {
 
       {overview ? <RealProtectionBanner overview={overview} checkedAt={dataUpdatedAt || undefined} /> : <SkeletonCard className="h-24" />}
 
-      {posture && (
+      {mockVisible && posture && (
         <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
           <h2 className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Security posture</h2>
           <div className="flex items-baseline gap-3">

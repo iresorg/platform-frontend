@@ -4,6 +4,7 @@ import { RequirePermission } from "@/components/auth/require-permission";
 
 import { FrameworkScore } from "@/components/shared/framework-score";
 import { MockDataBanner } from "@/components/shared/mock-data-banner";
+import { MockGate } from "@/components/shared/mock-gate";
 import { useMockPortalComplianceQuery } from "@/lib/mocks/compliance";
 
 export default function PortalCompliancePage() {
@@ -17,6 +18,7 @@ export default function PortalCompliancePage() {
         <p className="text-sm text-muted-foreground">Where your organization stands against each framework.</p>
       </div>
 
+      <MockGate>
       <MockDataBanner endpoint="GET /portal/compliance" />
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
@@ -44,6 +46,7 @@ export default function PortalCompliancePage() {
           </section>
         );
       })}
+      </MockGate>
     </div>
     </RequirePermission>
   );

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Can } from "@/components/auth/can";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MockDataBanner } from "@/components/shared/mock-data-banner";
+import { MockGate } from "@/components/shared/mock-gate";
 import { Button } from "@/components/ui/button";
 import { ColorBadge } from "@/components/ui/color-badge";
 import { useMockActionPlanQuery, useMockMarkDoneMutation } from "@/lib/mocks/action-plan";
@@ -20,6 +21,7 @@ export default function ActionPlanPage() {
         <p className="text-sm text-muted-foreground">Approved recommendations from your security team, ordered by when they&rsquo;re due.</p>
       </div>
 
+      <MockGate>
       <MockDataBanner endpoint="GET /portal/action-plan" />
 
       {!isLoading && items?.length === 0 ? (
@@ -67,6 +69,7 @@ export default function ActionPlanPage() {
           ))}
         </div>
       )}
+      </MockGate>
     </div>
   );
 }

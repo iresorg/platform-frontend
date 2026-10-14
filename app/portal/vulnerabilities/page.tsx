@@ -2,12 +2,15 @@
 
 import { ShieldCheck } from "lucide-react";
 import { MockDataBanner } from "@/components/shared/mock-data-banner";
+import { MockGate } from "@/components/shared/mock-gate";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ColorBadge } from "@/components/ui/color-badge";
+import { useMockVisible } from "@/hooks/use-mock-visible";
 import { useNow } from "@/hooks/use-now";
 import { useMockFindingsQuery, toPortalFinding } from "@/lib/mocks/findings";
 
 export default function PortalVulnerabilitiesPage() {
+  const mockVisible = useMockVisible();
   const { data: findings, isLoading } = useMockFindingsQuery();
   const now = useNow(60_000);
   const items = (findings ?? []).map(toPortalFinding);
@@ -18,10 +21,15 @@ export default function PortalVulnerabilitiesPage() {
       <div>
         <h1 className="text-2xl">Vulnerabilities</h1>
         <p className="text-sm text-muted-foreground">
-          {isLoading ? "Loading..." : `${items.length} issue${items.length === 1 ? "" : "s"} to fix, ${dueThisWeek} due this week`}
+          {!mockVisible
+            ? "Not connected yet"
+            : isLoading
+              ? "Loading..."
+              : `${items.length} issue${items.length === 1 ? "" : "s"} to fix, ${dueThisWeek} due this week`}
         </p>
       </div>
 
+      <MockGate>
       <MockDataBanner endpoint="GET /portal/vulnerabilities" />
 
       {!isLoading && items.length === 0 ? (
@@ -48,6 +56,7 @@ export default function PortalVulnerabilitiesPage() {
           ))}
         </div>
       )}
+      </MockGate>
     </div>
   );
 }

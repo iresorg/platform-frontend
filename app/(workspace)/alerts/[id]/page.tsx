@@ -176,6 +176,18 @@ export default function LiveAlertDetailPage({
                   <DetailRow label="Detected" value={formatDateTime(alert.detected_at)} />
                   <DetailRow label="Ingested" value={formatDateTime(alert.created_at)} />
                   <DetailRow label="Last updated" value={formatDateTime(alert.updated_at)} />
+                  <DetailRow
+                    label="Case"
+                    value={
+                      alert.case_id ? (
+                        <Link href={`/cases/${alert.case_id}`} className="text-ocean hover:underline dark:text-sky">
+                          View case
+                        </Link>
+                      ) : (
+                        <span className="text-muted-foreground">Not linked to a case</span>
+                      )
+                    }
+                  />
                 </div>
               </Card>
 

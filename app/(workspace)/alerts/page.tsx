@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, ChevronRight, Radio } from "lucide-react";
 import { AlertStatusBadge } from "@/components/alerts/alert-status-badge";
 import { RuleLevelBadge } from "@/components/alerts/rule-level-badge";
+import { ColorBadge } from "@/components/ui/color-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -84,6 +85,9 @@ export default function AlertsPage() {
                   Status
                 </TableHead>
                 <TableHead className="bg-muted/50 text-xs font-bold tracking-wide text-muted-foreground uppercase">
+                  Case
+                </TableHead>
+                <TableHead className="bg-muted/50 text-xs font-bold tracking-wide text-muted-foreground uppercase">
                   Detected
                 </TableHead>
                 <TableHead className="w-8 bg-muted/50" />
@@ -93,7 +97,7 @@ export default function AlertsPage() {
               {isLoading &&
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={6}>
+                    <TableCell colSpan={7}>
                       <Skeleton className="h-10 w-full" />
                     </TableCell>
                   </TableRow>
@@ -102,7 +106,7 @@ export default function AlertsPage() {
               {isError && (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="py-16 text-center text-sm text-destructive"
                   >
                     Couldn&rsquo;t reach the live backend
@@ -114,7 +118,7 @@ export default function AlertsPage() {
               {!isLoading && !isError && alerts.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="py-16 text-center text-muted-foreground"
                   >
                     No alerts reported yet.
@@ -142,6 +146,15 @@ export default function AlertsPage() {
                   </TableCell>
                   <TableCell>
                     <AlertStatusBadge status={alert.status} />
+                  </TableCell>
+                  <TableCell>
+                    {alert.case_id ? (
+                      <Link href={`/cases/${alert.case_id}`} onClick={(e) => e.stopPropagation()}>
+                        <ColorBadge tone="blue" variant="outline">Linked</ColorBadge>
+                      </Link>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {formatTime(alert.detected_at)}

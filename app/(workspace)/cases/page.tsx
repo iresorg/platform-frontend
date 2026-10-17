@@ -2,7 +2,7 @@
 
 import { Suspense, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { ArrowUpCircle, Search, X } from "lucide-react";
 import { CreateIncidentDialog } from "@/components/incidents/create-incident-dialog";
 import { ChartsRow } from "@/components/queue/charts-row";
 import { MetricsBar, type TileFilter } from "@/components/queue/metrics-bar";
@@ -44,7 +44,7 @@ function QueueContent() {
   const status = (params.get("status") as IncidentStatus | null) ?? undefined;
   const severity = (params.get("severity") as IncidentSeverity | null) ?? undefined;
   const q = params.get("q") ?? "";
-  const tile = params.get("tile") as "unassigned" | "nearsla" | null;
+  const tile = params.get("tile") as "unassigned" | "nearsla" | "escalated" | null;
   const page = Math.max(1, Number(params.get("page") ?? 1) || 1);
 
   // Filters live in the URL so a filtered view survives a refresh and can be
@@ -81,10 +81,14 @@ function QueueContent() {
       const remaining = new Date(c.sla_due_at).getTime() - now.getTime();
       return remaining > 0 && remaining <= FIFTEEN_MIN;
     }
+    // Filtered client-side on the loaded page, like the tiles above —
+    // there's no server-side ?is_escalated= filter param (only the field
+    // itself, added to the backend 2026-10-17).
+    if (tile === "escalated") return Boolean(c.is_escalated);
     return true;
   });
 
-  const activeTile: TileFilter | null = severity === "CRITICAL" ? "critical" : tile;
+  const activeTile: TileFilter | null = severity === "CRITICAL" ? "critical" : tile === "escalated" ? null : tile;
   const hasFilters = Boolean(status || severity || q || tile);
   const total = data?.count ?? 0;
   const from = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
@@ -151,6 +155,15 @@ function QueueContent() {
             className="h-8 pl-8"
           />
         </div>
+        <Button
+          variant={tile === "escalated" ? "default" : "outline"}
+          size="sm"
+          aria-pressed={tile === "escalated"}
+          onClick={() => setParams({ tile: tile === "escalated" ? null : "escalated" })}
+        >
+          <ArrowUpCircle aria-hidden="true" />
+          Escalated
+        </Button>
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={clearAll}>
             <X aria-hidden="true" />

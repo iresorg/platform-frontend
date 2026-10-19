@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -10,6 +11,7 @@ import { SeverityBadge } from "@/components/shared/severity-badge";
 import { ArrowUpCircle } from "lucide-react";
 import { SLABadge } from "@/components/shared/sla-badge";
 import { StatusPill } from "@/components/shared/status-pill";
+import { TestBadge } from "@/components/shared/test-badge";
 import { classifyNote } from "@/lib/incidents/enrichment";
 import type { Incident } from "@/lib/incidents/types";
 
@@ -18,6 +20,9 @@ export function CaseHeader({ incident }: { incident: Incident }) {
   const { user } = useAuth();
   const done = incident.status === "RESOLVED" || incident.status === "CLOSED";
   const text = incident.summary || incident.description;
+  // The case object has no customer_id/customer_name of its own (even
+  // after the 19-20 Oct addendum) — every case the analyst can see
+  // belongs to their own active tenant, so that's the link target too.
   // is_escalated/escalated_at were added to the backend 2026-10-17 — not
   // yet confirmed live with a populated value (no staff account available
   // to check post-change; see the real tier/role rollout notes). Falls
@@ -42,10 +47,22 @@ export function CaseHeader({ incident }: { incident: Incident }) {
         <StatusPill status={incident.status} />
         <IntelBadge score={incident.intel_score} />
         <SLABadge dueAt={incident.sla_due_at} done={done} />
+        {incident.is_test && <TestBadge />}
       </div>
       <h1 className="font-heading text-xl font-bold">{incident.title}</h1>
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-        {user?.tenant_name && <span>{user.tenant_name}</span>}
+        {user?.tenant_name && (
+          <span>
+            {user.customer_id ? (
+              <Link href={`/customers/${user.customer_id}`} className="hover:text-foreground hover:underline">
+                {user.tenant_name}
+              </Link>
+            ) : (
+              user.tenant_name
+            )}
+            {incident.branch_label && <span className="text-muted-foreground"> · {incident.branch_label}</span>}
+          </span>
+        )}
         {incident.agent_name && (
           <>
             <span aria-hidden="true">·</span>

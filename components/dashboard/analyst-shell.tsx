@@ -18,6 +18,7 @@ import {
   Sparkles,
   UserCog,
   Users,
+  Users2,
   X,
 } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
@@ -50,6 +51,7 @@ const SECURITY_NAV_LINKS = [
 ];
 
 const ADMIN_NAV_LINKS = [
+  { href: "/customers", label: "Customers", icon: Users2, permission: "customer.read", match: (p: string) => p.startsWith("/customers") },
   { href: "/tenants", label: "Tenants", icon: Building2, permission: "tenant.read", match: (p: string) => p.startsWith("/tenants") },
   { href: "/reports", label: "Reports", icon: FileBarChart, permission: "report.manage", match: (p: string) => p === "/reports" },
   { href: "/admin/users", label: "Users & Audit", icon: ScrollText, permission: "audit.read", match: (p: string) => p.startsWith("/admin") },

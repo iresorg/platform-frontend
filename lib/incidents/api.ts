@@ -41,6 +41,8 @@ export async function fetchIncidents(
   if (filters?.search) params.set("search", filters.search);
   if (filters?.page) params.set("page", String(filters.page));
   if (filters?.page_size) params.set("page_size", String(filters.page_size));
+  // exclude_test isn't a real param — see IncidentFilters.
+  if (filters?.customer_id) params.set("customer_id", filters.customer_id);
   const qs = params.toString();
   const raw = await apiRequest<
     Paginated<IncidentListItem | Paginated<IncidentListItem>>

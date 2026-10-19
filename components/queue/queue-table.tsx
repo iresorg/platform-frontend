@@ -11,6 +11,7 @@ import { SeverityBadge } from "@/components/shared/severity-badge";
 import { SkeletonTable } from "@/components/shared/skeletons";
 import { SLABadge } from "@/components/shared/sla-badge";
 import { StatusPill } from "@/components/shared/status-pill";
+import { TestBadge } from "@/components/shared/test-badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useNow } from "@/hooks/use-now";
@@ -27,15 +28,27 @@ export function QueueTable({
   error,
   hasFilters,
   onClearFilters,
+  customerName,
+  hideCustomerColumn = false,
 }: {
   rows: IncidentListItem[] | undefined;
   loading: boolean;
   error: string | null;
   hasFilters: boolean;
   onClearFilters: () => void;
+  // The case object has no customer_id/customer_name of its own (still
+  // true as of the 19-20 Oct addendum — only branch_label and is_test
+  // were added). Every case in view belongs to whichever tenant the
+  // analyst is switched into, so the caller passes that name down rather
+  // than this table inventing one.
+  customerName?: string;
+  // Hidden when the queue is already filtered to one customer — the
+  // column would just repeat the same name on every row.
+  hideCustomerColumn?: boolean;
 }) {
   const router = useRouter();
   const now = useNow(15_000);
+  const cols = hideCustomerColumn ? COLS : COLS + 1;
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
@@ -46,6 +59,7 @@ export function QueueTable({
               <TableHead className={cn(HEAD, "w-28")}>Severity</TableHead>
               <TableHead className={HEAD}>Title</TableHead>
               <TableHead className={HEAD}>Status</TableHead>
+              {!hideCustomerColumn && <TableHead className={HEAD}>Customer</TableHead>}
               <TableHead className={HEAD}>Endpoint</TableHead>
               <TableHead className={HEAD}>SLA</TableHead>
               <TableHead className={HEAD}>Created</TableHead>
@@ -53,11 +67,11 @@ export function QueueTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading && !rows && <SkeletonTable rows={8} cols={COLS} />}
+            {loading && !rows && <SkeletonTable rows={8} cols={cols} />}
 
             {error && !rows && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={COLS} className="py-14 text-center text-sm text-destructive">
+                <TableCell colSpan={cols} className="py-14 text-center text-sm text-destructive">
                   Couldn&rsquo;t load cases: {error}
                 </TableCell>
               </TableRow>
@@ -65,7 +79,7 @@ export function QueueTable({
 
             {rows?.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={COLS} className="p-0">
+                <TableCell colSpan={cols} className="p-0">
                   {hasFilters ? (
                     <EmptyState
                       icon={SearchX}
@@ -106,10 +120,23 @@ export function QueueTable({
                       {(c.occurrence_count ?? 0) > 1 && (
                         <span className="ml-1.5 font-mono text-xs text-muted-foreground">×{c.occurrence_count}</span>
                       )}
+                      {c.is_test && <span className="ml-1.5 inline-flex align-middle"><TestBadge /></span>}
                     </Link>
                     {isNew && <span className="text-xs font-bold text-ocean">New</span>}
                   </TableCell>
                   <TableCell><StatusPill status={c.status} /></TableCell>
+                  {!hideCustomerColumn && (
+                    <TableCell className="text-sm">
+                      {customerName ? (
+                        <>
+                          {customerName}
+                          {c.branch_label && <span className="ml-1 text-muted-foreground">· {c.branch_label}</span>}
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  )}
                   <TableCell>
                     <span className="flex items-center gap-1">
                       <span className="font-mono text-xs">{c.agent_name || "—"}</span>

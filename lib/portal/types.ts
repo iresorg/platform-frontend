@@ -36,6 +36,12 @@ export interface PortalCaseListItem {
   event_time: string | null;
   created_at: string;
   updated_at: string;
+  // Added to the backend 19-20 Oct 2026 (the addendum) — confirmed live.
+  // is_test is defensive here: test clients are never supposed to see
+  // their own TEST badge (and the client app never renders one), but the
+  // field is modeled in case that changes.
+  branch_label?: string;
+  is_test?: boolean;
 }
 
 // A single sanitized timeline entry. The backend types this as a free-form
@@ -60,6 +66,8 @@ export interface PortalEndpoint {
   status: string;
   last_seen: string | null;
   open_cases: number;
+  // Added to the backend 19-20 Oct 2026 — confirmed live.
+  branch_label?: string;
 }
 
 export interface PortalAcknowledgeResponse {

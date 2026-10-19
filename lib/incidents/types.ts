@@ -59,6 +59,11 @@ export interface IncidentListItem {
   // cases, per the guide.
   is_escalated?: boolean;
   escalated_at?: string | null;
+  // Added to the backend 19-20 Oct 2026 (the addendum) — confirmed live
+  // on CaseList/CaseDetail. No customer_id/customer_name field exists on
+  // the case object even now; the backend only added these two.
+  branch_label?: string;
+  is_test?: boolean;
 }
 
 export interface IncidentNote {
@@ -120,6 +125,9 @@ export interface Incident {
   // See IncidentListItem above — added to the backend 2026-10-17.
   is_escalated?: boolean;
   escalated_at?: string | null;
+  // See IncidentListItem above — added to the backend 19-20 Oct 2026.
+  branch_label?: string;
+  is_test?: boolean;
 }
 
 // POST /incidents/ — confirmed live to return only these 7 fields, even
@@ -217,6 +225,14 @@ export interface IncidentFilters {
   search?: string;
   page?: number;
   page_size?: number;
+  // customer_id is a real, confirmed filter param on GET /cases/ — but
+  // the response rows still don't carry a customer_id/customer_name
+  // field back (see IncidentListItem), so there's no way to render which
+  // customer a row belongs to beyond "whichever one you just filtered
+  // to." exclude_test isn't a real param (not in the schema) — filtered
+  // client-side only, same pattern as the Unassigned/Near SLA tiles.
+  customer_id?: string;
+  exclude_test?: boolean;
 }
 
 // GET /cases/{id}/timeline/ — other Wazuh events on the same endpoint (or

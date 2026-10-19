@@ -33,6 +33,8 @@ export type GuidePermissionKey =
   | "tenant.read"
   | "tenant.write"
   | "tenant.tokens"
+  | "customer.read"
+  | "customer.manage"
   | "report.manage"
   | "audit.read"
   | "user.manage"
@@ -72,6 +74,13 @@ const GRANTED_TO: Record<GuidePermissionKey, UserRole[]> = {
   "tenant.read": TIER2_PLUS,
   "tenant.write": ["admin"],
   "tenant.tokens": ["admin"],
+  // "Lead only" in the addendum's own 3-role vocabulary (analyst/lead/
+  // customer) — the real backend enforces this on invite/disable, but
+  // GET /me's role field has no "lead" value, only tier1/tier2/admin.
+  // "admin" is this app's closest analogue (see tenant.tokens above,
+  // already the gate for comparable org-management actions).
+  "customer.read": ALL_STAFF,
+  "customer.manage": ["admin"],
   "report.manage": TIER2_PLUS,
   "audit.read": TIER2_PLUS,
   "user.manage": ["admin"],

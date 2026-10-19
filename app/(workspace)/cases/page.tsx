@@ -2,7 +2,8 @@
 
 import { Suspense, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpCircle, Search, X } from "lucide-react";
+import { ArrowUpCircle, FlaskConical, Search, X } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
 import { CreateIncidentDialog } from "@/components/incidents/create-incident-dialog";
 import { ChartsRow } from "@/components/queue/charts-row";
 import { MetricsBar, type TileFilter } from "@/components/queue/metrics-bar";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNow } from "@/hooks/use-now";
+import { useCustomersQuery } from "@/lib/customers/queries";
 import { useMetricsOverviewQuery } from "@/lib/metrics/queries";
 import { useIncidentsQuery } from "@/lib/incidents/queries";
 import type { IncidentSeverity, IncidentStatus } from "@/lib/incidents/types";
@@ -46,6 +48,9 @@ function QueueContent() {
   const q = params.get("q") ?? "";
   const tile = params.get("tile") as "unassigned" | "nearsla" | "escalated" | null;
   const page = Math.max(1, Number(params.get("page") ?? 1) || 1);
+  const customerId = params.get("customer_id") ?? undefined;
+  // Defaults to off, per the addendum.
+  const excludeTest = params.get("exclude_test") === "true";
 
   // Filters live in the URL so a filtered view survives a refresh and can be
   // sent to a colleague. Changing any filter returns to page one.
@@ -66,13 +71,24 @@ function QueueContent() {
     search: q || undefined,
     page,
     page_size: PAGE_SIZE,
+    customer_id: customerId,
   });
   const { data: metrics, isLoading: metricsLoading } = useMetricsOverviewQuery();
+  const { user } = useAuth();
+  const { data: customers } = useCustomersQuery();
+  // The case object still carries no customer_id/customer_name of its
+  // own (see lib/incidents/types.ts) — when filtered, the name is
+  // whichever customer was picked; otherwise it's the analyst's own
+  // active tenant, since every visible case belongs to it.
+  const selectedCustomerName = customerId ? customers?.find((c) => c.id === customerId)?.name : user?.tenant_name;
 
   // "Unassigned" and "Near SLA" have no API filter, so they narrow the rows
   // already loaded; Critical maps onto the real severity filter.
   const rows = data?.results.filter((c) => {
     const done = c.status === "RESOLVED" || c.status === "CLOSED";
+    // exclude_test isn't a real query param (see lib/incidents/types.ts) —
+    // filtered here the same way the tiles below are.
+    if (excludeTest && c.is_test) return false;
     if (tile === "unassigned" && c.assigned_to_email) return false;
     if (tile === "nearsla") {
       if (done || !c.sla_due_at) return false;
@@ -89,7 +105,7 @@ function QueueContent() {
   });
 
   const activeTile: TileFilter | null = severity === "CRITICAL" ? "critical" : tile === "escalated" ? null : tile;
-  const hasFilters = Boolean(status || severity || q || tile);
+  const hasFilters = Boolean(status || severity || q || tile || customerId || excludeTest);
   const total = data?.count ?? 0;
   const from = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const to = Math.min(page * PAGE_SIZE, total);
@@ -144,6 +160,26 @@ function QueueContent() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={customerId ?? "all"} onValueChange={(v) => setParams({ customer_id: v === "all" ? null : v })}>
+          <SelectTrigger size="sm" aria-label="Filter by customer">
+            <SelectValue placeholder="All customers" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All customers</SelectItem>
+            {customers?.map((c) => (
+              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant={excludeTest ? "default" : "outline"}
+          size="sm"
+          aria-pressed={excludeTest}
+          onClick={() => setParams({ exclude_test: excludeTest ? null : "true" })}
+        >
+          <FlaskConical aria-hidden="true" />
+          Hide test clients
+        </Button>
         <div className="relative min-w-48 flex-1 sm:max-w-xs">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
@@ -181,6 +217,8 @@ function QueueContent() {
         error={isError ? (error instanceof Error ? error.message : "Unknown error") : null}
         hasFilters={hasFilters}
         onClearFilters={clearAll}
+        customerName={selectedCustomerName}
+        hideCustomerColumn={Boolean(customerId)}
       />
 
       {data && total > PAGE_SIZE && (

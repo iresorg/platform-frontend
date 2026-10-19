@@ -48,6 +48,13 @@ export interface MeResponse {
   tenants: Tenant[];
   // Permission codes granted in the active tenant.
   permissions: string[];
+  // Added to the backend Oct 17 — replaces the old permission-code guess
+  // (lib/auth/roles.ts's former deriveRole()). role's values line up
+  // exactly with UserRole (lib/auth/types.ts); tier is null for tenant
+  // users, non-null ('tier1'/'tier2'/'admin') for staff.
+  role: string;
+  tier: string | null;
+  user_type: "staff" | "tenant";
 }
 
 export interface SwitchTenantResponse {

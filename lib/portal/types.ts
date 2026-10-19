@@ -60,8 +60,6 @@ export interface PortalEndpoint {
   status: string;
   last_seen: string | null;
   open_cases: number;
-  // Not yet on the real backend — see the addendum's branch_label note.
-  branch_label?: string;
 }
 
 export interface PortalAcknowledgeResponse {

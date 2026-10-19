@@ -5,7 +5,9 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Donut } from "@/components/shared/donut";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useVulnerabilityPostureQuery } from "@/lib/dashboard/queries";
 import { useMetricsOverviewQuery, useMetricsTopEndpointsQuery, useMetricsTrendQuery } from "@/lib/metrics/queries";
+import type { SeverityCounts } from "@/lib/dashboard/types";
 
 const STORAGE_KEY = "ires.queue.charts.collapsed";
 
@@ -23,7 +25,7 @@ const subscribe = (cb: () => void) => {
   return () => window.removeEventListener("storage", cb);
 };
 
-const TIERS: { key: "Critical" | "High" | "Medium" | "Low"; label: string; color: string; bar: string }[] = [
+const TIERS: { key: keyof SeverityCounts; label: string; color: string; bar: string }[] = [
   { key: "Critical", label: "Critical", color: "var(--red)", bar: "bg-ires-red" },
   { key: "High", label: "High", color: "var(--sunset)", bar: "bg-sunset" },
   { key: "Medium", label: "Medium", color: "var(--amber)", bar: "bg-amber-brand" },
@@ -54,6 +56,7 @@ export function ChartsRow() {
   const [override, setOverride] = useState<boolean | null>(null);
   const collapsed = override ?? stored;
   const { data: metrics, isLoading: metricsLoading } = useMetricsOverviewQuery();
+  const { data: posture, isLoading: postureLoading } = useVulnerabilityPostureQuery();
   const { data: trend, isLoading: trendLoading } = useMetricsTrendQuery(7);
   const { data: topEndpoints, isLoading: topLoading } = useMetricsTopEndpointsQuery(5);
 
@@ -73,6 +76,7 @@ export function ChartsRow() {
     value: bySeverity.get(t.key.toUpperCase()) ?? 0,
     color: t.color,
   }));
+  const maxFinding = Math.max(1, ...TIERS.map((t) => posture?.[t.key] ?? 0));
   const trendData = (trend ?? []).map((p) => ({ ...p, label: formatDay(p.date) }));
 
   return (
@@ -87,12 +91,29 @@ export function ChartsRow() {
         {collapsed ? "Show charts" : "Hide charts"}
       </button>
       {!collapsed && (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           <Card title="Cases by severity">
             {metricsLoading ? (
               <Skeleton className="h-32 w-full" />
             ) : (
               <Donut segments={severitySegments} centerLabel="cases" ariaLabel={`Cases by severity: ${severitySegments.map((s) => `${s.value} ${s.label}`).join(", ")}`} />
+            )}
+          </Card>
+          <Card title="Open findings by severity">
+            {postureLoading || !posture ? (
+              <Skeleton className="h-32 w-full" />
+            ) : (
+              <div className="flex flex-col gap-3">
+                {TIERS.map((t) => (
+                  <div key={t.key} className="flex items-center gap-3">
+                    <span className="w-16 shrink-0 text-sm text-muted-foreground">{t.label}</span>
+                    <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
+                      <div className={`h-full rounded-full ${t.bar}`} style={{ width: `${((posture[t.key] ?? 0) / maxFinding) * 100}%` }} />
+                    </div>
+                    <span className="w-8 shrink-0 text-right text-sm font-medium tabular-nums">{posture[t.key] ?? 0}</span>
+                  </div>
+                ))}
+              </div>
             )}
           </Card>
           <Card title="Created vs resolved, last 7 days">

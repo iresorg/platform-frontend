@@ -6,12 +6,22 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth/auth-provider";
 import { roleHome } from "@/lib/auth/roles";
+import { isStaffRole } from "@/lib/auth/types";
 import { useSwitchTenantMutation } from "@/lib/tenants/queries";
+
+// Every top-level staff route — used to tell whether a just-switched-to
+// role belongs in this shell at all.
+const STAFF_ROUTE_PREFIXES = [
+  "/overview", "/alerts", "/cases", "/assets", "/fleet", "/vulnerabilities",
+  "/compliance", "/threat-intel", "/ai-review", "/tenants", "/reports", "/admin",
+];
 
 // Detail pages belong to one tenant's data — after switching they'd 404,
 // so fall back to their list page.
 const DETAIL_FALLBACKS: [string, string][] = [
   ["/cases/", "/cases"],
+  ["/alerts/", "/alerts"],
+  ["/tenants/", "/tenants"],
 ];
 
 export function useTenantSwitch() {
@@ -46,8 +56,8 @@ export function useTenantSwitch() {
 
         const home = roleHome(me.role);
         const inWrongShell =
-          (me.role === "customer" && pathname.startsWith("/cases")) ||
-          (me.role !== "customer" && pathname.startsWith("/portal"));
+          (!isStaffRole(me.role) && STAFF_ROUTE_PREFIXES.some((p) => pathname.startsWith(p))) ||
+          (isStaffRole(me.role) && pathname.startsWith("/portal"));
         const fallback = DETAIL_FALLBACKS.find(([prefix]) => pathname.startsWith(prefix));
         if (inWrongShell) router.replace(home);
         else if (fallback) router.replace(fallback[1]);

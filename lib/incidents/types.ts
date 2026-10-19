@@ -53,16 +53,12 @@ export interface IncidentListItem {
   assigned_to_email: string;
   created_at: string;
   updated_at: string;
-  // Not yet on the real backend — the Screens & Data Guide's case object
-  // shows customer_name on every case, and the addendum splits it into
-  // customer_name + branch_label plus an is_test flag. Modeled as optional
-  // so the UI renders correctly today (customer/branch columns blank) and
-  // picks them up automatically once the backend adds them — see the
-  // Customer column note in components/queue/queue-table.tsx.
-  customer_id?: string;
-  customer_name?: string;
-  branch_label?: string;
-  is_test?: boolean;
+  // Added to the backend 2026-10-17 — replaces reading escalation back
+  // out of the timeline notes (lib/incidents/enrichment.ts's
+  // classifyNote). Lets Tier 2's queue actually filter to escalated
+  // cases, per the guide.
+  is_escalated?: boolean;
+  escalated_at?: string | null;
 }
 
 export interface IncidentNote {
@@ -121,11 +117,9 @@ export interface Incident {
   // this comes back empty (e.g. a manually-created case).
   raw_document?: Record<string, unknown> | null;
   acknowledged_at?: string | null;
-  // See IncidentListItem above — not yet on the real backend.
-  customer_id?: string;
-  customer_name?: string;
-  branch_label?: string;
-  is_test?: boolean;
+  // See IncidentListItem above — added to the backend 2026-10-17.
+  is_escalated?: boolean;
+  escalated_at?: string | null;
 }
 
 // POST /incidents/ — confirmed live to return only these 7 fields, even
@@ -223,9 +217,6 @@ export interface IncidentFilters {
   search?: string;
   page?: number;
   page_size?: number;
-  // Not yet on the real backend — see the customer_id/is_test note above.
-  customer_id?: string;
-  exclude_test?: boolean;
 }
 
 // GET /cases/{id}/timeline/ — other Wazuh events on the same endpoint (or

@@ -42,7 +42,7 @@ export function MetricsBar({
       value: metrics?.no_customer,
       icon: HelpCircle,
       tint: "bg-tone-gray-bg text-tone-gray-fg",
-      hint: "Alerts from a machine whose group isn't linked to a client. Tell security.",
+      hint: "No customer could be resolved. An agent's group is misconfigured — an ops fix, not a security event.",
     },
   ];
 

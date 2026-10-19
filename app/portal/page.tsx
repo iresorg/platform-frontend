@@ -7,15 +7,18 @@ import { ColorBadge } from "@/components/ui/color-badge";
 import { DeviceHealthCard } from "@/components/portal/device-health-card";
 import { RealProtectionBanner } from "@/components/portal/real-protection-banner";
 import { EmptyState } from "@/components/shared/empty-state";
+import { MockDataBanner } from "@/components/shared/mock-data-banner";
 import { SkeletonCard, SkeletonTable } from "@/components/shared/skeletons";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useMockVisible } from "@/hooks/use-mock-visible";
+import { useMockPostureQuery } from "@/lib/mocks/posture";
 import { downloadPortalCasesCsv } from "@/lib/portal/export-csv";
 import { CUSTOMER_STATUS_LABEL, CUSTOMER_STATUS_TONE } from "@/lib/portal/format";
 import { usePortalCasesQuery, usePortalEndpointsQuery, usePortalOverviewQuery } from "@/lib/portal/queries";
 
 const HEAD = "bg-muted/60 text-xs font-bold tracking-wide text-muted-foreground uppercase";
-const RECENT_LIMIT = 5;
+const RECENT_LIMIT = 8;
 const NEEDS_ATTENTION_LIMIT = 5;
 
 const SEVERITY_ROWS: { key: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"; label: string; bar: string }[] = [
@@ -34,8 +37,10 @@ function formatDate(iso: string): string {
 // names or severity numbers anywhere in what's rendered.
 export default function PortalPage() {
   const router = useRouter();
+  const mockVisible = useMockVisible();
   const { data: overview, dataUpdatedAt } = usePortalOverviewQuery();
   const { data: devices } = usePortalEndpointsQuery();
+  const { data: posture } = useMockPostureQuery();
   // One page covers a customer's whole recent history at MVP scale — see
   // the backend asks for a smaller, purpose-built /portal/overview
   // response that wouldn't need this.
@@ -66,6 +71,19 @@ export default function PortalPage() {
     <div className="flex flex-col gap-5">
 
       {overview ? <RealProtectionBanner overview={overview} checkedAt={dataUpdatedAt || undefined} /> : <SkeletonCard className="h-24" />}
+
+      {mockVisible && posture && (
+        <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
+          <h2 className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Security posture</h2>
+          <div className="flex items-baseline gap-3">
+            <span className="text-4xl font-bold tabular-nums">{posture.score}</span>
+            <span className="text-sm text-muted-foreground">
+              / 100 · {posture.label}{posture.trend === "up" ? " · trending up" : posture.trend === "down" ? " · trending down" : ""}
+            </span>
+          </div>
+          <MockDataBanner endpoint="portal.overview.posture" />
+        </section>
+      )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <DeviceHealthCard devices={devices} />

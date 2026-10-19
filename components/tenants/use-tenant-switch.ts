@@ -26,12 +26,15 @@ export function useTenantSwitch() {
     async (tenantId: string) => {
       try {
         const res = await mutation.mutateAsync(tenantId);
-        const me = await refreshSession();
+        // The response carries a fresh token already scoped to the new
+        // tenant — pass it straight through so the confirmation /me call
+        // below reads it instead of the stale one in storage. (Reusing the
+        // old token here was the actual bug: /me would always re-report
+        // the tenant it was already scoped to, no matter what was switched
+        // to, because nothing had told it to look at a different token.)
+        const me = await refreshSession(res.access_token);
 
-        // Don't trust the switch response alone: the backend has been seen
-        // answering 200 "Switched" while /me kept reporting the old tenant
-        // (it stores the choice in a session cookie that Bearer-token
-        // requests never read). Only /me reflects what the API will
+        // Confirm rather than assume: only /me reflects what the API will
         // actually scope data to.
         if (me.customer_id !== tenantId) {
           toast.error(

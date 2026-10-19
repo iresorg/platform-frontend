@@ -8,6 +8,7 @@ import {
   Menu,
   UserCog,
   Users,
+  Users2,
   X,
 } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
@@ -28,6 +29,12 @@ const MONITOR_NAV_LINKS = [
     label: "Triage Queue",
     icon: ClipboardList,
     match: (p: string) => p === "/cases" || /^\/cases\/[^/]+$/.test(p),
+  },
+  {
+    href: "/customers",
+    label: "Customers",
+    icon: Users2,
+    match: (p: string) => p === "/customers" || p.startsWith("/customers/"),
   },
 ];
 

@@ -19,15 +19,17 @@ function ContactRow({ label, contact }: { label: string; contact: Contact | null
   );
 }
 
-// Loaded once per case — analysts need these when they escalate.
-export function ClientContacts({ customerId }: { customerId: string | undefined }) {
+// Loaded once per case — analysts need these when they escalate. `bare`
+// drops the heading/divider for callers that already provide their own
+// card chrome (the Customers screen's own Contacts card).
+export function ClientContacts({ customerId, bare = false }: { customerId: string | undefined; bare?: boolean }) {
   const { data, isLoading } = useCustomerQuery(customerId);
 
   if (!customerId) return null;
 
   return (
-    <div className="mt-4 flex flex-col gap-3 border-t border-border pt-4">
-      <h3 className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Client contacts</h3>
+    <div className={bare ? "flex flex-col gap-3" : "mt-4 flex flex-col gap-3 border-t border-border pt-4"}>
+      {!bare && <h3 className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Client contacts</h3>}
       {isLoading ? (
         <Skeleton className="h-12 w-full" />
       ) : !data || (!data.technical_contact && !data.escalation_contact) ? (

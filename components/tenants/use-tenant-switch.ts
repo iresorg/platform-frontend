@@ -12,7 +12,6 @@ import { useSwitchTenantMutation } from "@/lib/tenants/queries";
 // so fall back to their list page.
 const DETAIL_FALLBACKS: [string, string][] = [
   ["/cases/", "/cases"],
-  ["/cases/live-alerts/", "/cases/live-alerts"],
 ];
 
 export function useTenantSwitch() {

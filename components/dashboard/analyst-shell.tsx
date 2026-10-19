@@ -5,9 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ClipboardList,
-  Gauge,
   Menu,
-  Radio,
   UserCog,
   Users,
   X,
@@ -23,17 +21,14 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { cn } from "cn";
 
 // `match` decides when a link reads as "you are here" — the queue also owns
-// every case detail page (/cases/<id>), which the other sections don't.
+// every case detail page (/cases/<id>).
 const MONITOR_NAV_LINKS = [
-  { href: "/cases/live-overview", label: "Overview", icon: Gauge, match: (p: string) => p === "/cases/live-overview" },
   {
     href: "/cases",
     label: "Triage Queue",
     icon: ClipboardList,
-    match: (p: string) =>
-      p === "/cases" || (/^\/cases\/[^/]+$/.test(p) && !["live-overview", "live-alerts"].includes(p.split("/")[2])),
+    match: (p: string) => p === "/cases" || /^\/cases\/[^/]+$/.test(p),
   },
-  { href: "/cases/live-alerts", label: "Alerts", icon: Radio, match: (p: string) => p.startsWith("/cases/live-alerts") },
 ];
 
 const WORKSPACE_NAV_LINKS = [

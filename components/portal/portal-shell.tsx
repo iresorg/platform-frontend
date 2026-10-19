@@ -4,14 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3,
   History,
   LayoutDashboard,
-  Lightbulb,
-  LifeBuoy,
   Menu,
   MonitorCheck,
-  Radio,
   X,
 } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
@@ -29,10 +25,6 @@ const NAV_LINKS = [
   { href: "/portal", label: "Overview", icon: LayoutDashboard, match: (p: string) => p === "/portal" },
   { href: "/portal/incidents", label: "Incidents", icon: History, match: (p: string) => p.startsWith("/portal/incidents") },
   { href: "/portal/devices", label: "Devices", icon: MonitorCheck, match: (p: string) => p.startsWith("/portal/devices") },
-  { href: "/portal/alerts", label: "Alerts", icon: Radio, match: (p: string) => p.startsWith("/portal/alerts") },
-  { href: "/portal/reports", label: "Reports", icon: BarChart3, match: (p: string) => p.startsWith("/portal/reports") },
-  { href: "/portal/recommendations", label: "Recommendations", icon: Lightbulb, match: (p: string) => p.startsWith("/portal/recommendations") },
-  { href: "/portal/support", label: "Support", icon: LifeBuoy, match: (p: string) => p.startsWith("/portal/support") },
 ];
 
 function SidebarNav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {

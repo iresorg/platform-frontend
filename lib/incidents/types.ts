@@ -53,6 +53,16 @@ export interface IncidentListItem {
   assigned_to_email: string;
   created_at: string;
   updated_at: string;
+  // Not yet on the real backend — the Screens & Data Guide's case object
+  // shows customer_name on every case, and the addendum splits it into
+  // customer_name + branch_label plus an is_test flag. Modeled as optional
+  // so the UI renders correctly today (customer/branch columns blank) and
+  // picks them up automatically once the backend adds them — see the
+  // Customer column note in components/queue/queue-table.tsx.
+  customer_id?: string;
+  customer_name?: string;
+  branch_label?: string;
+  is_test?: boolean;
 }
 
 export interface IncidentNote {
@@ -111,6 +121,11 @@ export interface Incident {
   // this comes back empty (e.g. a manually-created case).
   raw_document?: Record<string, unknown> | null;
   acknowledged_at?: string | null;
+  // See IncidentListItem above — not yet on the real backend.
+  customer_id?: string;
+  customer_name?: string;
+  branch_label?: string;
+  is_test?: boolean;
 }
 
 // POST /incidents/ — confirmed live to return only these 7 fields, even
@@ -208,6 +223,9 @@ export interface IncidentFilters {
   search?: string;
   page?: number;
   page_size?: number;
+  // Not yet on the real backend — see the customer_id/is_test note above.
+  customer_id?: string;
+  exclude_test?: boolean;
 }
 
 // GET /cases/{id}/timeline/ — other Wazuh events on the same endpoint (or

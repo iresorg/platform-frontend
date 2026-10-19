@@ -2,7 +2,7 @@
 
 import { Suspense, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { FlaskConical, Search, X } from "lucide-react";
 import { CreateIncidentDialog } from "@/components/incidents/create-incident-dialog";
 import { ChartsRow } from "@/components/queue/charts-row";
 import { MetricsBar, type TileFilter } from "@/components/queue/metrics-bar";
@@ -14,6 +14,7 @@ import { useNow } from "@/hooks/use-now";
 import { useMetricsOverviewQuery } from "@/lib/metrics/queries";
 import { useIncidentsQuery } from "@/lib/incidents/queries";
 import type { IncidentSeverity, IncidentStatus } from "@/lib/incidents/types";
+import { useMyTenantsQuery } from "@/lib/tenants/queries";
 
 const PAGE_SIZE = 25;
 const FIFTEEN_MIN = 15 * 60_000;
@@ -46,6 +47,9 @@ function QueueContent() {
   const q = params.get("q") ?? "";
   const tile = params.get("tile") as "unassigned" | "nearsla" | null;
   const page = Math.max(1, Number(params.get("page") ?? 1) || 1);
+  const customerId = params.get("customer_id") ?? undefined;
+  // Defaults to off, like the guide specifies.
+  const excludeTest = params.get("exclude_test") === "true";
 
   // Filters live in the URL so a filtered view survives a refresh and can be
   // sent to a colleague. Changing any filter returns to page one.
@@ -66,13 +70,19 @@ function QueueContent() {
     search: q || undefined,
     page,
     page_size: PAGE_SIZE,
+    customer_id: customerId,
+    exclude_test: excludeTest,
   });
   const { data: metrics, isLoading: metricsLoading } = useMetricsOverviewQuery();
+  const { data: tenants } = useMyTenantsQuery();
 
   // "Unassigned" and "Near SLA" have no API filter, so they narrow the rows
   // already loaded; Critical maps onto the real severity filter.
+  // exclude_test is filtered client-side too, defensively — the real
+  // backend doesn't honor the query param yet (see lib/incidents/api.ts).
   const rows = data?.results.filter((c) => {
     const done = c.status === "RESOLVED" || c.status === "CLOSED";
+    if (excludeTest && c.is_test) return false;
     if (tile === "unassigned" && c.assigned_to_email) return false;
     if (tile === "nearsla") {
       if (done || !c.sla_due_at) return false;
@@ -85,7 +95,7 @@ function QueueContent() {
   });
 
   const activeTile: TileFilter | null = severity === "CRITICAL" ? "critical" : tile;
-  const hasFilters = Boolean(status || severity || q || tile);
+  const hasFilters = Boolean(status || severity || q || tile || customerId || excludeTest);
   const total = data?.count ?? 0;
   const from = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const to = Math.min(page * PAGE_SIZE, total);
@@ -140,6 +150,26 @@ function QueueContent() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={customerId ?? "all"} onValueChange={(v) => setParams({ customer_id: v === "all" ? null : v })}>
+          <SelectTrigger size="sm" aria-label="Filter by customer">
+            <SelectValue placeholder="All customers" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All customers</SelectItem>
+            {tenants?.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant={excludeTest ? "default" : "outline"}
+          size="sm"
+          aria-pressed={excludeTest}
+          onClick={() => setParams({ exclude_test: excludeTest ? null : "true" })}
+        >
+          <FlaskConical aria-hidden="true" />
+          Hide test clients
+        </Button>
         <div className="relative min-w-48 flex-1 sm:max-w-xs">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
@@ -168,6 +198,7 @@ function QueueContent() {
         error={isError ? (error instanceof Error ? error.message : "Unknown error") : null}
         hasFilters={hasFilters}
         onClearFilters={clearAll}
+        hideCustomerColumn={Boolean(customerId)}
       />
 
       {data && total > PAGE_SIZE && (

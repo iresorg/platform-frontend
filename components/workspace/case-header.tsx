@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -9,6 +10,7 @@ import { RelativeTime } from "@/components/shared/relative-time";
 import { SeverityBadge } from "@/components/shared/severity-badge";
 import { SLABadge } from "@/components/shared/sla-badge";
 import { StatusPill } from "@/components/shared/status-pill";
+import { TestBadge } from "@/components/shared/test-badge";
 import type { Incident } from "@/lib/incidents/types";
 
 export function CaseHeader({ incident }: { incident: Incident }) {
@@ -16,6 +18,10 @@ export function CaseHeader({ incident }: { incident: Incident }) {
   const { user } = useAuth();
   const done = incident.status === "RESOLVED" || incident.status === "CLOSED";
   const text = incident.summary || incident.description;
+  // customer_name isn't on the real case object yet — falls back to the
+  // analyst's own active tenant, since every case the analyst can see
+  // today belongs to it anyway (see lib/incidents/types.ts).
+  const customerName = incident.customer_name ?? user?.tenant_name;
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
@@ -33,10 +39,22 @@ export function CaseHeader({ incident }: { incident: Incident }) {
         <StatusPill status={incident.status} />
         <IntelBadge score={incident.intel_score} />
         <SLABadge dueAt={incident.sla_due_at} done={done} />
+        {incident.is_test && <TestBadge />}
       </div>
       <h1 className="font-heading text-xl font-bold">{incident.title}</h1>
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-        {user?.tenant_name && <span>{user.tenant_name}</span>}
+        {customerName && (
+          <span>
+            {incident.customer_id ? (
+              <Link href={`/customers/${incident.customer_id}`} className="hover:text-foreground hover:underline">
+                {customerName}
+              </Link>
+            ) : (
+              customerName
+            )}
+            {incident.branch_label && <span className="text-muted-foreground"> · {incident.branch_label}</span>}
+          </span>
+        )}
         {incident.agent_name && (
           <>
             <span aria-hidden="true">·</span>

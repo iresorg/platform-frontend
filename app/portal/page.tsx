@@ -15,7 +15,7 @@ import { CUSTOMER_STATUS_LABEL, CUSTOMER_STATUS_TONE } from "@/lib/portal/format
 import { usePortalCasesQuery, usePortalEndpointsQuery, usePortalOverviewQuery } from "@/lib/portal/queries";
 
 const HEAD = "bg-muted/60 text-xs font-bold tracking-wide text-muted-foreground uppercase";
-const RECENT_LIMIT = 8;
+const RECENT_LIMIT = 5;
 const NEEDS_ATTENTION_LIMIT = 5;
 
 const SEVERITY_ROWS: { key: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"; label: string; bar: string }[] = [

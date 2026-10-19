@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowUpCircle, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth/auth-provider";
+import { ClientContacts } from "@/components/workspace/client-contacts";
 import { EscalateDialog } from "@/components/workspace/escalate-dialog";
 import { VerdictDialog } from "@/components/workspace/verdict-dialog";
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,7 @@ export function ActionsCard({ incident }: { incident: Incident }) {
       )}
       <VerdictDialog caseId={incident.id} caseTitle={incident.title} open={verdictOpen} onOpenChange={setVerdictOpen} />
       <EscalateDialog caseId={incident.id} open={escalateOpen} onOpenChange={setEscalateOpen} />
+      <ClientContacts customerId={incident.customer_id} />
     </section>
   );
 }

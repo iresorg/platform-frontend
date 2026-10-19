@@ -41,6 +41,10 @@ export async function fetchIncidents(
   if (filters?.search) params.set("search", filters.search);
   if (filters?.page) params.set("page", String(filters.page));
   if (filters?.page_size) params.set("page_size", String(filters.page_size));
+  // Not yet honored by the real backend (see IncidentFilters) — sent
+  // anyway so the filter is ready the moment the backend adds it.
+  if (filters?.customer_id) params.set("customer_id", filters.customer_id);
+  if (filters?.exclude_test) params.set("exclude_test", "true");
   const qs = params.toString();
   const raw = await apiRequest<
     Paginated<IncidentListItem | Paginated<IncidentListItem>>

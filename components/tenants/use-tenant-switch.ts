@@ -6,22 +6,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth/auth-provider";
 import { roleHome } from "@/lib/auth/roles";
-import { isStaffRole } from "@/lib/auth/types";
 import { useSwitchTenantMutation } from "@/lib/tenants/queries";
-
-// Every top-level staff route — used to tell whether a just-switched-to
-// role belongs in this shell at all.
-const STAFF_ROUTE_PREFIXES = [
-  "/overview", "/alerts", "/cases", "/assets", "/fleet", "/vulnerabilities",
-  "/compliance", "/threat-intel", "/ai-review", "/tenants", "/reports", "/admin",
-];
 
 // Detail pages belong to one tenant's data — after switching they'd 404,
 // so fall back to their list page.
 const DETAIL_FALLBACKS: [string, string][] = [
   ["/cases/", "/cases"],
-  ["/alerts/", "/alerts"],
-  ["/tenants/", "/tenants"],
+  ["/cases/live-alerts/", "/cases/live-alerts"],
 ];
 
 export function useTenantSwitch() {
@@ -35,15 +26,12 @@ export function useTenantSwitch() {
     async (tenantId: string) => {
       try {
         const res = await mutation.mutateAsync(tenantId);
-        // The response carries a fresh token already scoped to the new
-        // tenant — pass it straight through so the confirmation /me call
-        // below reads it instead of the stale one in storage. (Reusing the
-        // old token here was the actual bug: /me would always re-report
-        // the tenant it was already scoped to, no matter what was switched
-        // to, because nothing had told it to look at a different token.)
-        const me = await refreshSession(res.access_token);
+        const me = await refreshSession();
 
-        // Confirm rather than assume: only /me reflects what the API will
+        // Don't trust the switch response alone: the backend has been seen
+        // answering 200 "Switched" while /me kept reporting the old tenant
+        // (it stores the choice in a session cookie that Bearer-token
+        // requests never read). Only /me reflects what the API will
         // actually scope data to.
         if (me.customer_id !== tenantId) {
           toast.error(
@@ -56,8 +44,8 @@ export function useTenantSwitch() {
 
         const home = roleHome(me.role);
         const inWrongShell =
-          (!isStaffRole(me.role) && STAFF_ROUTE_PREFIXES.some((p) => pathname.startsWith(p))) ||
-          (isStaffRole(me.role) && pathname.startsWith("/portal"));
+          (me.role === "customer" && pathname.startsWith("/cases")) ||
+          (me.role !== "customer" && pathname.startsWith("/portal"));
         const fallback = DETAIL_FALLBACKS.find(([prefix]) => pathname.startsWith(prefix));
         if (inWrongShell) router.replace(home);
         else if (fallback) router.replace(fallback[1]);

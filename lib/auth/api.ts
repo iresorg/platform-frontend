@@ -1,11 +1,12 @@
 import { ApiError } from "@/lib/api-error";
 import { USE_MOCK_AUTH } from "@/lib/config";
 import { mockAccounts } from "@/lib/auth/mock-users";
+import { deriveRole } from "@/lib/auth/roles";
 import { realLogin, verifyMfa } from "@/lib/auth/real-api";
 import type { LoginData } from "@/lib/auth/real-types";
 import { getMe } from "@/lib/tenants/api";
 import type { MeResponse } from "@/lib/tenants/types";
-import type { AuthUser, LoginCredentials, LoginResult, UserRole } from "@/lib/auth/types";
+import type { AuthUser, LoginCredentials, LoginResult } from "@/lib/auth/types";
 
 const MOCK_LATENCY_MS = 500;
 
@@ -44,13 +45,13 @@ export class MfaRequiredError extends Error {
 }
 
 export function mapMe(me: MeResponse): AuthUser {
-  const { user, active_tenant, permissions, role } = me;
+  const { user, active_tenant, permissions } = me;
   const name = `${user.first_name} ${user.last_name}`.trim() || user.email;
   return {
     id: user.id,
     name,
     email: user.email,
-    role: role as UserRole,
+    role: deriveRole(permissions),
     customer_id: active_tenant.id,
     tenant_name: active_tenant.name,
     permissions,

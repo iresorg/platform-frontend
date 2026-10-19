@@ -24,11 +24,8 @@ interface AuthContextValue {
   completeMfa: (challengeToken: string, code: string) => Promise<AuthUser>;
   logout: () => void;
   // Re-reads /me and updates the stored user — call after anything that
-  // changes the active tenant or the user's permissions. Pass `token` when
-  // the caller already has a fresher one than what's in storage (e.g.
-  // switch-tenant hands back a token scoped to the new tenant) — without
-  // it, /me would read the stale stored token and report stale data.
-  refreshSession: (token?: string) => Promise<AuthUser>;
+  // changes the active tenant or the user's permissions.
+  refreshSession: () => Promise<AuthUser>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -85,12 +82,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.replace("/login");
   }, [router]);
 
-  const refreshSession = useCallback(async (token?: string) => {
-    const me = await getMe(token);
+  const refreshSession = useCallback(async () => {
+    const me = await getMe();
     const current = getStoredUser();
     const refreshed: AuthUser = { ...mapMe(me), session_id: current?.session_id };
-    const activeToken = token ?? getStoredToken();
-    if (activeToken) storeAuth(activeToken, refreshed);
+    const token = getStoredToken();
+    if (token) storeAuth(token, refreshed);
     setUser(refreshed);
     return refreshed;
   }, []);

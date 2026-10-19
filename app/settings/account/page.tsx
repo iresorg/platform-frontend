@@ -4,7 +4,6 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { ChangePasswordForm } from "@/components/settings/change-password-form";
 import { MfaCard } from "@/components/settings/mfa-card";
 import { SessionsCard } from "@/components/settings/sessions-card";
-import { isStaffRole } from "@/lib/auth/types";
 
 function Card({
   title,
@@ -54,7 +53,7 @@ export default function AccountPage() {
             <Field label="Active organization" value={user?.tenant_name ?? "—"} />
             <Field
               label="Workspace"
-              value={user && isStaffRole(user.role) ? "SOC workspace" : "Client portal"}
+              value={user?.role === "customer" ? "Customer portal" : "SOC workspace"}
             />
           </div>
         </Card>

@@ -48,23 +48,11 @@ export interface MeResponse {
   tenants: Tenant[];
   // Permission codes granted in the active tenant.
   permissions: string[];
-  // Added to the backend Oct 17 — replaces the old permission-code guess
-  // (lib/auth/roles.ts's former deriveRole()). role's values line up
-  // exactly with UserRole (lib/auth/types.ts); tier is null for tenant
-  // users, non-null ('tier1'/'tier2'/'admin') for staff.
-  role: string;
-  tier: string | null;
-  user_type: "staff" | "tenant";
 }
 
 export interface SwitchTenantResponse {
   message: string;
   active_tenant: Tenant;
-  // Scoped to the new tenant — confirmed live. The old token keeps working
-  // (not revoked) but still reports the old tenant, since it's just an
-  // unrelated JWT snapshot; this new one is what the caller should
-  // actually switch to using.
-  access_token?: string;
 }
 
 // CONFIRMED from a live response. `id` is the membership id (used in the

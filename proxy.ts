@@ -4,11 +4,7 @@ import { roleHome } from "@/lib/auth/roles";
 import type { UserRole as Role } from "@/lib/auth/types";
 
 const SESSION_COOKIE = "ires_session";
-const STAFF_ROLES = new Set(["tier1", "tier2", "admin"]);
-const ANALYST_ROUTE_PREFIXES = [
-  "/overview", "/alerts", "/cases", "/assets", "/fleet", "/vulnerabilities",
-  "/compliance", "/threat-intel", "/ai-review", "/tenants", "/reports", "/admin",
-];
+const ANALYST_ROUTE_PREFIXES = ["/cases"];
 const CUSTOMER_ROUTE_PREFIXES = ["/portal"];
 // Any signed-in role may use these (role checks stay on the client).
 const SHARED_ROUTE_PREFIXES = ["/settings"];
@@ -16,7 +12,7 @@ const SHARED_ROUTE_PREFIXES = ["/settings"];
 // Optimistic checks only — this reads a non-sensitive role cookie to
 // pre-filter obviously unauthorized navigations. The bearer token that
 // actually authorizes Case API requests lives in localStorage and is
-// verified server-side on every request; see lib/http.ts.
+// verified server-side on every request; see lib/cases/api.ts.
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const role = request.cookies.get(SESSION_COOKIE)?.value as
@@ -46,11 +42,10 @@ export function proxy(request: NextRequest) {
   if (pathname === "/login") {
     return NextResponse.redirect(new URL(roleHome(role), request.url));
   }
-  const isStaff = STAFF_ROLES.has(role);
-  if (!isStaff && isAnalystRoute) {
+  if (role === "customer" && isAnalystRoute) {
     return NextResponse.redirect(new URL(roleHome(role), request.url));
   }
-  if (isStaff && isCustomerRoute) {
+  if (role !== "customer" && isCustomerRoute) {
     return NextResponse.redirect(new URL(roleHome(role), request.url));
   }
 

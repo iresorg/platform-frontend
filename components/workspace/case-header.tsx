@@ -7,10 +7,8 @@ import { CopyButton } from "@/components/shared/copy-button";
 import { IntelBadge } from "@/components/shared/intel-badge";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { SeverityBadge } from "@/components/shared/severity-badge";
-import { ArrowUpCircle } from "lucide-react";
 import { SLABadge } from "@/components/shared/sla-badge";
 import { StatusPill } from "@/components/shared/status-pill";
-import { classifyNote } from "@/lib/incidents/enrichment";
 import type { Incident } from "@/lib/incidents/types";
 
 export function CaseHeader({ incident }: { incident: Incident }) {
@@ -18,13 +16,6 @@ export function CaseHeader({ incident }: { incident: Incident }) {
   const { user } = useAuth();
   const done = incident.status === "RESOLVED" || incident.status === "CLOSED";
   const text = incident.summary || incident.description;
-  // is_escalated/escalated_at were added to the backend 2026-10-17 — not
-  // yet confirmed live with a populated value (no staff account available
-  // to check post-change; see the real tier/role rollout notes). Falls
-  // back to reading it out of the timeline (the old approach) for any
-  // case created before the field existed, or if it's ever absent.
-  const escalationNote = [...incident.notes].reverse().find((n) => classifyNote(n) === "escalated");
-  const isEscalated = incident.is_escalated ?? Boolean(escalationNote);
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
@@ -67,16 +58,6 @@ export function CaseHeader({ incident }: { incident: Incident }) {
         <span>{incident.assigned_to_email ? `assigned to ${incident.assigned_to_email}` : "unassigned"}</span>
       </p>
       {text && <p className="text-sm">{text}</p>}
-      {isEscalated && (
-        <p className="flex items-start gap-1.5 rounded-lg border border-tone-orange-line bg-tone-orange-bg px-3 py-2 text-sm text-tone-orange-fg">
-          <ArrowUpCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <span>
-            {escalationNote
-              ? <>Escalated by {escalationNote.author_email}: {escalationNote.content.replace(/^Case escalated to \w+\.\s*/i, "")}</>
-              : "Escalated for Tier 2 review."}
-          </span>
-        </p>
-      )}
     </div>
   );
 }

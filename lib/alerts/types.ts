@@ -17,10 +17,6 @@ export interface Alert {
   status: string;
   detected_at: string;
   created_at: string;
-  // Added to the backend 2026-10-17. Not confirmed live with a populated
-  // value yet (no alert seen so far has one) — schema types it as a
-  // plain, non-nullable string, so "" is treated as "not linked."
-  case_id: string;
 }
 
 export type JsonObject = { [key: string]: unknown };

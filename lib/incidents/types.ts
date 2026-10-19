@@ -53,12 +53,6 @@ export interface IncidentListItem {
   assigned_to_email: string;
   created_at: string;
   updated_at: string;
-  // Added to the backend 2026-10-17 — replaces reading escalation back
-  // out of the timeline notes (lib/incidents/enrichment.ts's
-  // classifyNote). Lets Tier 2's queue actually filter to escalated
-  // cases, per the guide.
-  is_escalated?: boolean;
-  escalated_at?: string | null;
 }
 
 export interface IncidentNote {
@@ -117,9 +111,6 @@ export interface Incident {
   // this comes back empty (e.g. a manually-created case).
   raw_document?: Record<string, unknown> | null;
   acknowledged_at?: string | null;
-  // See IncidentListItem above — added to the backend 2026-10-17.
-  is_escalated?: boolean;
-  escalated_at?: string | null;
 }
 
 // POST /incidents/ — confirmed live to return only these 7 fields, even

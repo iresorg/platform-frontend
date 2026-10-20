@@ -9,8 +9,9 @@ import {
   fetchCustomerOnboarding,
   fetchCustomerUsers,
   fetchCustomers,
+  onboardCustomer,
 } from "@/lib/customers/api";
-import type { AdminCreateUserPayload } from "@/lib/customers/types";
+import type { AdminCreateUserPayload, AdminCustomerOnboardPayload } from "@/lib/customers/types";
 
 export const customerKeys = {
   list: ["customers"] as const,
@@ -75,5 +76,13 @@ export function useDisableCustomerUserMutation(customerId: string) {
   return useMutation({
     mutationFn: (userId: string) => disableCustomerUser(userId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: customerKeys.users(customerId) }),
+  });
+}
+
+export function useOnboardCustomerMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: AdminCustomerOnboardPayload) => onboardCustomer(payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: customerKeys.list }),
   });
 }

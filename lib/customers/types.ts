@@ -88,3 +88,39 @@ export interface DisableUserResponse {
   user_id: string;
   is_active: boolean;
 }
+
+export interface AdminCustomerOnboardBranch {
+  name: string;
+  agent_group: string;
+  expected_endpoints?: number;
+  code?: string;
+}
+
+// POST /admin/customers/onboard body. The endpoint's own description says
+// it "onboards one or more customer organizations", but the declared
+// schema is a single object with no array variant — so one call onboards
+// one customer; a tenant.json holding several is sent as several calls.
+export interface AdminCustomerOnboardPayload {
+  schema?: string;
+  customer_id: string;
+  customer_name: string;
+  sector?: string;
+  service_tier?: string;
+  is_test?: boolean;
+  contacts?: unknown;
+  branches?: AdminCustomerOnboardBranch[];
+}
+
+export interface AdminCustomerOnboardItem {
+  customer_id: string;
+  customer_name: string;
+  is_test: boolean;
+  branches_count: number;
+  reassigned_cases_count: number;
+  created: boolean;
+}
+
+export interface AdminCustomerOnboardResult {
+  count: number;
+  items: AdminCustomerOnboardItem[];
+}

@@ -2,15 +2,21 @@
 
 import { RequirePermission } from "@/components/auth/require-permission";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2 } from "lucide-react";
+import { Building2, Plus } from "lucide-react";
+import { OnboardCustomerDialog } from "@/components/customers/onboard-customer-dialog";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { TestBadge } from "@/components/shared/test-badge";
+import { Button } from "@/components/ui/button";
+import { useCan } from "@/hooks/use-can";
 import { useCustomersQuery } from "@/lib/customers/queries";
 import type { AdminCustomerList } from "@/lib/customers/types";
 
 export default function CustomersPage() {
   const router = useRouter();
+  const can = useCan();
+  const [onboardOpen, setOnboardOpen] = useState(false);
   const { data: customers, isLoading, isError, error } = useCustomersQuery();
 
   const columns: DataTableColumn<AdminCustomerList>[] = [
@@ -32,10 +38,20 @@ export default function CustomersPage() {
   return (
     <RequirePermission code="customer.read">
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-xl">Customers</h1>
-        <p className="text-sm text-muted-foreground">Client setup, onboarding progress and portal access.</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl">Customers</h1>
+          <p className="text-sm text-muted-foreground">Client setup, onboarding progress and portal access.</p>
+        </div>
+        {can("customer.manage") && (
+          <Button size="sm" onClick={() => setOnboardOpen(true)}>
+            <Plus className="size-4" aria-hidden="true" />
+            Onboard customer
+          </Button>
+        )}
       </div>
+
+      <OnboardCustomerDialog open={onboardOpen} onOpenChange={setOnboardOpen} />
 
       <DataTable
         columns={columns}

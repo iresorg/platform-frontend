@@ -5,6 +5,8 @@ import type {
   AdminCustomerDetail,
   AdminCustomerEndpoint,
   AdminCustomerList,
+  AdminCustomerOnboardPayload,
+  AdminCustomerOnboardResult,
   AdminCustomerOnboarding,
   AdminCustomerUser,
   DisableUserResponse,
@@ -49,4 +51,14 @@ export async function createCustomerUser(
 // Lead only.
 export async function disableCustomerUser(userId: string): Promise<DisableUserResponse> {
   return apiRequest<DisableUserResponse>(`/api/v1/admin/users/${userId}/disable`, { method: "POST" });
+}
+
+// Admin only. JSON body — the backend also accepts multipart/file, but a
+// JSON POST does the same thing without needing to touch apiRequest's
+// fixed Content-Type header.
+export async function onboardCustomer(payload: AdminCustomerOnboardPayload): Promise<AdminCustomerOnboardResult> {
+  return apiRequest<AdminCustomerOnboardResult>("/api/v1/admin/customers/onboard", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }

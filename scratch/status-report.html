@@ -1,0 +1,592 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>iRES Build Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ---- design plan -------------------------------------------------
+     Layout: single long report, sticky top nav with anchor jumps,
+     section = heading + lede + content (tables / status-pill lists).
+     Color: navy/charcoal ground, iRES red accent, semantic status
+     tones (ok / partial / mock / critical) kept distinct from the
+     brand accent so "this is broken" never looks like "this is ours".
+     Type: Fraunces (display) / Inter (body) / JetBrains Mono (data,
+     endpoints, field names) — the same three faces the product itself
+     uses, so the report reads as part of the same system.
+     ------------------------------------------------------------- */
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface-2: #eceef2;
+    --fg: #15181f;
+    --muted: #5b6270;
+    --border: #dde1e8;
+    --accent: #c81e3a;
+    --accent-ink: #ffffff;
+    --navy: #121a2e;
+    --navy-ink: #e8ebf3;
+
+    --ok-bg: #e4f5ea;      --ok-fg: #1c7a44;      --ok-line: #bfe6cf;
+    --partial-bg: #fdf1dc; --partial-fg: #92600c; --partial-line: #f3d9a4;
+    --mock-bg: #eef0f4;    --mock-fg: #565e6e;    --mock-line: #d7dbe3;
+    --crit-bg: #fde7e7;    --crit-fg: #a3182a;    --crit-line: #f5bcc1;
+    --new-bg: #e8edfc;     --new-fg: #2c4aa8;     --new-line: #c6d2f5;
+
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Inter", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0c0e14;
+      --surface: #151823;
+      --surface-2: #1b1f2c;
+      --fg: #e9ebf2;
+      --muted: #9aa0b2;
+      --border: #2a2f3f;
+      --accent: #ff5470;
+      --accent-ink: #1a0509;
+      --navy: #0c0e14;
+      --navy-ink: #e9ebf2;
+
+      --ok-bg: #112a1c;      --ok-fg: #5fd996;      --ok-line: #1e4430;
+      --partial-bg: #2e220c; --partial-fg: #f3c568; --partial-line: #4a3614;
+      --mock-bg: #1c2030;    --mock-fg: #a8aec2;    --mock-line: #2d3244;
+      --crit-bg: #311015;    --crit-fg: #ff8d9b;    --crit-line: #4d1a21;
+      --new-bg: #141c33;     --new-fg: #91a7f2;     --new-line: #233059;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0e14;
+    --surface: #151823;
+    --surface-2: #1b1f2c;
+    --fg: #e9ebf2;
+    --muted: #9aa0b2;
+    --border: #2a2f3f;
+    --accent: #ff5470;
+    --accent-ink: #1a0509;
+    --navy: #0c0e14;
+    --navy-ink: #e9ebf2;
+
+    --ok-bg: #112a1c;      --ok-fg: #5fd996;      --ok-line: #1e4430;
+    --partial-bg: #2e220c; --partial-fg: #f3c568; --partial-line: #4a3614;
+    --mock-bg: #1c2030;    --mock-fg: #a8aec2;    --mock-line: #2d3244;
+    --crit-bg: #311015;    --crit-fg: #ff8d9b;    --crit-line: #4d1a21;
+    --new-bg: #141c33;     --new-fg: #91a7f2;     --new-line: #233059;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+
+  .wrap {
+    max-width: 920px;
+    margin-inline: auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  /* ---------- top band ---------- */
+  header.hero {
+    background: var(--navy);
+    color: var(--navy-ink);
+    padding-block: 40px 32px;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  h1.title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(28px, 5vw, 40px);
+    line-height: 1.1;
+    margin: 10px 0 12px;
+    text-wrap: balance;
+  }
+  .lede {
+    max-width: 62ch;
+    color: color-mix(in srgb, var(--navy-ink) 78%, transparent);
+    font-size: 15.5px;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-top: 20px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: color-mix(in srgb, var(--navy-ink) 62%, transparent);
+  }
+  .meta-row span b { color: var(--navy-ink); font-weight: 600; }
+
+  /* ---------- stat tiles ---------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 26px;
+  }
+  @media (min-width: 640px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat {
+    background: color-mix(in srgb, var(--navy-ink) 7%, transparent);
+    border: 1px solid color-mix(in srgb, var(--navy-ink) 14%, transparent);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .stat .n { font-family: var(--font-display); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12px; color: color-mix(in srgb, var(--navy-ink) 65%, transparent); margin-top: 2px; }
+
+  /* ---------- sticky nav ---------- */
+  nav.jump {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  nav.jump .inner {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding-block: 10px;
+    scrollbar-width: none;
+  }
+  nav.jump .inner::-webkit-scrollbar { display: none; }
+  nav.jump a {
+    flex-shrink: 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 7px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    transition: background .15s, color .15s;
+  }
+  nav.jump a:hover { background: var(--surface-2); color: var(--fg); }
+
+  /* ---------- sections ---------- */
+  main { padding-block: 40px 70px; }
+  section { padding-top: 50px; scroll-margin-top: 54px; }
+  section:first-of-type { padding-top: 38px; }
+  .sec-head { margin-bottom: 18px; }
+  .sec-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 3.4vw, 27px);
+    font-weight: 600;
+    margin: 4px 0 8px;
+    text-wrap: balance;
+  }
+  .sec-dek { color: var(--muted); max-width: 66ch; font-size: 14.5px; }
+  h3 {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 0 10px;
+  }
+  p { margin: 0 0 12px; max-width: 68ch; }
+  a { color: var(--accent); }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- status pill ---------- */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .pill.ok { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-line); }
+  .pill.partial { background: var(--partial-bg); color: var(--partial-fg); border-color: var(--partial-line); }
+  .pill.mock { background: var(--mock-bg); color: var(--mock-fg); border-color: var(--mock-line); }
+  .pill.crit { background: var(--crit-bg); color: var(--crit-fg); border-color: var(--crit-line); }
+  .pill.new { background: var(--new-bg); color: var(--new-fg); border-color: var(--new-line); }
+
+  /* ---------- screen cards ---------- */
+  .screen-grid { display: grid; gap: 8px; }
+  .screen {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 15px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+  .screen .id { font-family: var(--font-mono); font-size: 11px; color: var(--muted); min-width: 2.4em; }
+  .screen .name { font-weight: 600; margin-right: auto; }
+  .screen .path {
+    flex-basis: 100%;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .screen .path .role { color: var(--accent); }
+  .screen .note { flex-basis: 100%; color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .group-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 22px 0 8px;
+  }
+  .group-label:first-child { margin-top: 0; }
+
+  /* ---------- tables ---------- */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 560px; }
+  th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-2);
+    padding: 9px 13px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td { padding: 10px 13px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.notes { color: var(--muted); }
+
+  /* ---------- issue cards ---------- */
+  .issue {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--mock-line);
+    background: var(--surface);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .issue.crit { border-left-color: var(--crit-fg); }
+  .issue.new { border-left-color: var(--new-fg); }
+  .issue.ok { border-left-color: var(--ok-fg); }
+  .issue .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .issue .head strong { font-size: 14.5px; }
+  .issue p:last-child { margin-bottom: 0; }
+  .issue .label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  ul.plain { margin: 0 0 12px; padding-left: 20px; }
+  ul.plain li { margin-bottom: 6px; max-width: 66ch; }
+
+  .callout {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .callout strong { color: var(--fg); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-block: 24px 48px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">iRES &middot; Engineering status</div>
+    <h1 class="title">Where the build actually stands</h1>
+    <p class="lede">Every screen, what's wired to the real backend versus standing in on mock data, what's still open, and what changed most recently &mdash; written so anyone on the team can get oriented without digging through commits.</p>
+    <div class="meta-row">
+      <span>Updated <b>20 Oct 2026</b></span>
+      <span>Branch <b><code style="background:transparent;border:0;padding:0;color:inherit">main</code></b></span>
+      <span>25 screens shipped</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n">25</div><div class="l">screens built</div></div>
+      <div class="stat"><div class="n">14</div><div class="l">on real backend data</div></div>
+      <div class="stat"><div class="n">11</div><div class="l">on mock data</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">active issue to fix</div></div>
+    </div>
+  </div>
+</header>
+
+<nav class="jump">
+  <div class="wrap inner">
+    <a href="#shipped">What's shipped</a>
+    <a href="#data">Real vs. mock data</a>
+    <a href="#open">What's not working</a>
+    <a href="#tenant-bug">Active-tenant bug</a>
+    <a href="#security">Security notes</a>
+    <a href="#environment">Branches &amp; environment</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section id="shipped">
+    <div class="sec-head">
+      <div class="sec-num">01</div>
+      <h2>What's shipped</h2>
+      <p class="sec-dek">Two apps sharing one codebase: the analyst workspace (iRES staff) and the client portal (tenant staff). Everything below is built, gated by role, and reachable &mdash; "shipped" here means the screen exists and works, not that its data is real. See the next section for that.</p>
+    </div>
+
+    <div class="callout" style="margin-bottom:20px">
+      <strong>Test access.</strong> There's no in-app role switcher, so reaching a screen means logging in as a real account that holds the role next to it below.
+      <ul class="plain" style="margin-top:8px">
+        <li><strong>Portal side:</strong> shared QA account &mdash; <code>claude-check-17907798183N@example.com</code> / <code>Check-Pass-17907798183N!9Aa</code>. It's <code>tenant_admin</code> on two linked test organizations, so it can reach every portal screen below, including the <code>tenant_admin</code>-only ones.</li>
+        <li><strong>Analyst side:</strong> no dedicated staff QA account exists yet (also flagged as a gap in §3) &mdash; testing these currently needs your own real analyst/admin login, which limits you to whichever tier that account holds.</li>
+      </ul>
+    </div>
+
+    <div class="group-label">Analyst workspace &middot; iRES staff</div>
+    <div class="screen-grid">
+      <div class="screen"><span class="id">A1</span><span class="name">SOC Overview</span><span class="pill partial">partly mock</span><span class="path">Sidebar &rarr; Overview &middot; <code>/overview</code> &middot; <span class="role">tier1, tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A2</span><span class="name">Alerts</span><span class="pill ok">real</span><span class="path">Sidebar &rarr; Alerts &middot; <code>/alerts</code> &middot; <span class="role">tier1, tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A3</span><span class="name">Triage Queue</span><span class="pill ok">real</span><span class="path">Sidebar &rarr; Triage Queue &middot; <code>/cases</code> &middot; <span class="role">tier1, tier2, admin</span></span><span class="note">Customer dropdown, "Hide test clients" toggle and branch label are new &mdash; see §2 for exactly what's real there.</span></div>
+      <div class="screen"><span class="id">A4</span><span class="name">Case Workspace</span><span class="pill partial">partly mock</span><span class="path">Open any row from Triage Queue &middot; <code>/cases/:id</code> &middot; <span class="role">tier1, tier2, admin</span></span><span class="note">New Client Contacts block on the Actions card.</span></div>
+      <div class="screen"><span class="id">A5</span><span class="name">Assets</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; Assets &middot; <code>/assets</code> &middot; <span class="role">tier1, tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A6</span><span class="name">Agent Fleet</span><span class="pill ok">real</span><span class="path">Sidebar &rarr; Agent Fleet &middot; <code>/fleet</code> &middot; <span class="role">tier1, tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A7</span><span class="name">Vulnerabilities</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; Vulnerabilities &middot; <code>/vulnerabilities</code> &middot; <span class="role">tier1, tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A8</span><span class="name">Compliance</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; Compliance &middot; <code>/compliance</code> &middot; <span class="role">tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A9</span><span class="name">Threat Intel</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; Threat Intel &middot; <code>/threat-intel</code> &middot; <span class="role">tier1, tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A10</span><span class="name">AI Review Queue</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; AI Review &middot; <code>/ai-review</code> &middot; <span class="role">tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A11</span><span class="name">Tenants</span><span class="pill partial">partly mock</span><span class="path">Sidebar &rarr; Tenants &middot; <code>/tenants</code> &middot; <span class="role">tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A12</span><span class="name">Reports</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; Reports &middot; <code>/reports</code> &middot; <span class="role">tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A13</span><span class="name">Users &amp; Audit</span><span class="pill ok">real</span><span class="path">Sidebar &rarr; Users &amp; Audit &middot; <code>/admin/users</code> &middot; <span class="role">tier2, admin</span></span></div>
+      <div class="screen"><span class="id">A14</span><span class="name">Customers</span><span class="pill new">new</span><span class="pill ok">real wiring</span><span class="path">Sidebar &rarr; Customers &middot; <code>/customers</code> &middot; <span class="role">tier1, tier2, admin</span></span><span class="note">List + detail (onboarding, endpoints, contacts, portal users), plus an "Onboard customer" button (JSON file or manual entry, admin only). Added for the client-onboarding addendum &mdash; nav link sits next to Triage Queue.</span></div>
+      <div class="screen"><span class="id">A15</span><span class="name">Accept Invite</span><span class="pill new">new</span><span class="pill ok">real wiring</span><span class="path">No nav entry &middot; <code>/accept-invite?token=&hellip;</code> &middot; <span class="role">public, no login</span></span><span class="note">The page a new client user lands on from their invite email to set a password. Needs a real, unused invite token in the URL &mdash; generate one by inviting a test user from a Customer's detail page.</span></div>
+    </div>
+
+    <div class="group-label">Client portal &middot; tenant staff</div>
+    <div class="screen-grid">
+      <div class="screen"><span class="id">P1</span><span class="name">Overview</span><span class="pill partial">partly mock</span><span class="path">Sidebar &rarr; Overview &middot; <code>/portal</code> &middot; <span class="role">tenant_user, tenant_admin</span></span></div>
+      <div class="screen"><span class="id">P2</span><span class="name">Incidents</span><span class="pill ok">real</span><span class="path">Sidebar &rarr; Incidents &middot; <code>/portal/incidents</code> &middot; <span class="role">tenant_user, tenant_admin</span></span></div>
+      <div class="screen"><span class="id">P3</span><span class="name">Incident Detail</span><span class="pill ok">real</span><span class="path">Open any row from Incidents &middot; <code>/portal/incidents/:id</code> &middot; <span class="role">tenant_user, tenant_admin</span></span></div>
+      <div class="screen"><span class="id">P4</span><span class="name">Devices</span><span class="pill ok">real</span><span class="path">Sidebar &rarr; Devices &middot; <code>/portal/devices</code> &middot; <span class="role">tenant_user, tenant_admin</span></span><span class="note">Branch column/filter now real, shown only for multi-branch clients.</span></div>
+      <div class="screen"><span class="id">P5</span><span class="name">Add Devices</span><span class="pill ok">real</span><span class="path">Sidebar &rarr; Add devices &middot; <code>/portal/devices/add</code> &middot; <span class="role">tenant_admin only</span></span></div>
+      <div class="screen"><span class="id">P6</span><span class="name">Vulnerabilities</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; Vulnerabilities &middot; <code>/portal/vulnerabilities</code> &middot; <span class="role">tenant_user, tenant_admin</span></span></div>
+      <div class="screen"><span class="id">P7</span><span class="name">Compliance</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; Compliance &middot; <code>/portal/compliance</code> &middot; <span class="role">tenant_admin only</span></span></div>
+      <div class="screen"><span class="id">P8</span><span class="name">Action Plan</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; Action plan &middot; <code>/portal/action-plan</code> &middot; <span class="role">tenant_user, tenant_admin</span></span></div>
+      <div class="screen"><span class="id">P9</span><span class="name">Reports</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; Reports &middot; <code>/portal/reports</code> &middot; <span class="role">tenant_admin only</span></span></div>
+      <div class="screen"><span class="id">P10</span><span class="name">Users</span><span class="pill mock">mock</span><span class="path">Sidebar &rarr; Users &middot; <code>/portal/users</code> &middot; <span class="role">tenant_admin only</span></span></div>
+    </div>
+  </section>
+
+  <section id="data">
+    <div class="sec-head">
+      <div class="sec-num">02</div>
+      <h2>Real data vs. mock data</h2>
+      <p class="sec-dek">Every mock screen carries a visible "Demo data" banner naming the missing endpoint, so nobody mistakes a fake number for a real one. This is the detail behind the pills above &mdash; what's actually wired, and what each "partly mock" screen is still faking.</p>
+    </div>
+
+    <h3>Analyst workspace</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Screen</th><th>Data</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>SOC Overview</td><td><span class="pill partial">partly mock</span></td><td class="notes">Tiles and charts from <code>/metrics/*</code>. The "AI drafts pending" tile is mock.</td></tr>
+          <tr><td>Alerts</td><td><span class="pill ok">real</span></td><td class="notes">Now shows a linked-case marker &mdash; <code>case_id</code> is confirmed live on the alert object.</td></tr>
+          <tr><td>Triage Queue</td><td><span class="pill ok">real</span></td><td class="notes">Customer dropdown filters on the real <code>customer_id</code> query param. "Hide test clients" is client-side only &mdash; <code>exclude_test</code> isn't a real param. The Customer column itself shows the analyst's active tenant name, not a true per-row value: the case object still has no <code>customer_id</code>/<code>customer_name</code> of its own, only <code>branch_label</code> and <code>is_test</code> were added.</td></tr>
+          <tr><td>Case Workspace</td><td><span class="pill partial">partly mock</span></td><td class="notes">Verdict, raw event, timeline, assign/escalate all real. New Client Contacts block reads a real endpoint, but the backend declares no shape at all for <code>contacts</code> &mdash; rendered defensively, not confirmed. AI panel is mock.</td></tr>
+          <tr><td>Assets</td><td><span class="pill mock">mock</span></td><td class="notes">No <code>/assets</code> endpoint.</td></tr>
+          <tr><td>Agent Fleet</td><td><span class="pill ok">real</span></td><td class="notes"><code>GET /endpoints</code>.</td></tr>
+          <tr><td>Vulnerabilities</td><td><span class="pill mock">mock</span></td><td class="notes">No <code>/findings</code> endpoint.</td></tr>
+          <tr><td>Compliance</td><td><span class="pill mock">mock</span></td><td class="notes">No <code>/compliance</code> endpoint.</td></tr>
+          <tr><td>Threat Intel</td><td><span class="pill mock">mock</span></td><td class="notes">No <code>/intel/matches</code> endpoint (per-case intel on the Case Workspace is real).</td></tr>
+          <tr><td>AI Review Queue</td><td><span class="pill mock">mock</span></td><td class="notes">No AI gateway exists yet.</td></tr>
+          <tr><td>Tenants</td><td><span class="pill partial">partly mock</span></td><td class="notes">Overview and Enrolment tabs real. Scope and Connectors tabs mock.</td></tr>
+          <tr><td>Reports</td><td><span class="pill mock">mock</span></td><td class="notes">No <code>/reports</code> endpoint.</td></tr>
+          <tr><td>Users &amp; Audit</td><td><span class="pill ok">real</span></td><td class="notes">Users tab reuses the real team/roles data. Audit tab uses <code>GET /audit/logs</code>.</td></tr>
+          <tr><td>Customers <span class="pill new" style="margin-left:4px">new</span></td><td><span class="pill ok">real wiring</span></td><td class="notes">All of <code>/admin/customers/*</code> wired and confirmed to fail honestly when not permitted. Not yet checked against real populated data &mdash; no staff-level test account available (see §5).</td></tr>
+          <tr><td>Accept Invite <span class="pill new" style="margin-left:4px">new</span></td><td><span class="pill ok">real wiring</span></td><td class="notes"><code>/auth/invite/*</code>. Verified live: expired/invalid link state renders correctly.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Client portal</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Screen</th><th>Data</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Overview</td><td><span class="pill partial">partly mock</span></td><td class="notes">Posture banner, devices and recent activity real. Posture score number is mock &mdash; <strong>hidden entirely</strong> from real tenants in production rather than shown fake.</td></tr>
+          <tr><td>Incidents</td><td><span class="pill ok">real</span></td><td class="notes">&nbsp;</td></tr>
+          <tr><td>Incident Detail</td><td><span class="pill ok">real</span></td><td class="notes">Including acknowledge.</td></tr>
+          <tr><td>Devices</td><td><span class="pill ok">real</span></td><td class="notes">Branch column now live.</td></tr>
+          <tr><td>Add Devices</td><td><span class="pill ok">real</span></td><td class="notes">Wired to <code>/fleet/tokens/</code> + <code>/fleet/enroll/</code>.</td></tr>
+          <tr><td>Vulnerabilities</td><td><span class="pill mock">mock</span></td><td class="notes">Hidden from real tenants in production (see callout below).</td></tr>
+          <tr><td>Compliance</td><td><span class="pill mock">mock</span></td><td class="notes">Hidden from real tenants in production.</td></tr>
+          <tr><td>Action Plan</td><td><span class="pill mock">mock</span></td><td class="notes">Hidden from real tenants in production.</td></tr>
+          <tr><td>Reports</td><td><span class="pill mock">mock</span></td><td class="notes">Hidden from real tenants in production.</td></tr>
+          <tr><td>Users</td><td><span class="pill mock">mock</span></td><td class="notes"><strong>Not yet hidden</strong> in production &mdash; a loose end, see §3.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout" style="margin-top:16px">
+      <strong>Production safety net:</strong> a "Demo data" banner next to a fake number wasn't enough on its own &mdash; a real client could still act on a fake vulnerability list. So in production, any screen or card still waiting on a backend endpoint shows a plain "coming soon" state to real tenant users instead of fabricated numbers. Staff and one designated demo tenant still see the mock data, for internal review and sales demos. Portal Users (above) still needs this same treatment added.
+    </div>
+  </section>
+
+  <section id="open">
+    <div class="sec-head">
+      <div class="sec-num">03</div>
+      <h2>What's not working yet</h2>
+      <p class="sec-dek">Grouped by what it actually takes to close each one. Most of this is the backend, not the frontend &mdash; the frontend is built and waiting on the endpoint.</p>
+    </div>
+
+    <h3>Needs a backend endpoint</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Area</th><th>Endpoints needed</th><th>Blocks</th></tr></thead>
+        <tbody>
+          <tr><td>Assets</td><td class="notes"><code>GET /assets</code>, <code>PATCH /assets/:id</code></td><td class="notes">Assets (analyst)</td></tr>
+          <tr><td>Findings</td><td class="notes"><code>GET /findings</code>, <code>GET /findings/:id</code>, <code>POST /findings/:id/rescan</code></td><td class="notes">Vulnerabilities (both apps)</td></tr>
+          <tr><td>Compliance</td><td class="notes"><code>GET /compliance</code>, <code>GET /portal/compliance</code></td><td class="notes">Compliance (both apps)</td></tr>
+          <tr><td>Threat intel</td><td class="notes"><code>GET /intel/matches</code> (cross-tenant aggregate)</td><td class="notes">Threat Intel</td></tr>
+          <tr><td>AI</td><td class="notes"><code>GET/PATCH /ai/drafts</code>, approve/reject</td><td class="notes">AI Review Queue, Case Workspace AI panel</td></tr>
+          <tr><td>Tenant scope &amp; connectors</td><td class="notes"><code>GET/PUT /tenants/:id/scope</code>, <code>GET /tenants/:id/connectors</code></td><td class="notes">Tenants &mdash; two tabs</td></tr>
+          <tr><td>Reports</td><td class="notes"><code>GET/POST /reports</code>, download, portal equivalents</td><td class="notes">Reports (both apps)</td></tr>
+          <tr><td>Action plan</td><td class="notes"><code>GET /portal/action-plan</code>, mark-done</td><td class="notes">Portal Action Plan</td></tr>
+          <tr><td>Portal users</td><td class="notes"><code>GET/POST/PATCH /portal/users</code> (no tenant ID in the URL)</td><td class="notes">Portal Users</td></tr>
+          <tr><td>Posture score</td><td class="notes">A <code>posture</code> field on <code>/portal/overview</code></td><td class="notes">Portal Overview</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Known data gaps, no fix available yet</h3>
+    <div class="issue">
+      <div class="head"><strong>No numeric severity on cases</strong><span class="pill mock">backend limit</span></div>
+      <p>The original spec wants a 0&ndash;15 number shown alongside the severity badge. The real case object only has a word (<code>LOW</code>/<code>MEDIUM</code>/<code>HIGH</code>/<code>CRITICAL</code>) &mdash; no number exists to show. Not faked.</p>
+    </div>
+    <div class="issue">
+      <div class="head"><strong>No distinct "escalated" status</strong><span class="pill mock">backend limit</span></div>
+      <p>Escalating a case only bumps severity and sets it to <code>INVESTIGATING</code> &mdash; there's no separate status value. The portal's "Under review by a senior analyst" wording can't be literally triggered as a result; <code>is_escalated</code> is shown on the analyst side instead, where it does exist.</p>
+    </div>
+    <div class="issue">
+      <div class="head"><strong>Cases still carry no customer identity</strong><span class="pill mock">backend limit</span></div>
+      <p>Even after the latest backend update, a case row has no <code>customer_id</code> or <code>customer_name</code> &mdash; only <code>branch_label</code> and <code>is_test</code> were added. The Triage Queue's Customer column shows the analyst's own active tenant, which is accurate but not a true per-row field.</p>
+    </div>
+
+    <h3>Closed today: bulk onboarding is now wired up</h3>
+    <div class="issue ok">
+      <div class="head"><strong>JSON/file customer onboarding shipped</strong><span class="pill ok">done</span></div>
+      <p>The Customers list now has an <strong>Onboard customer</strong> button (admin only) that calls <code>POST /admin/customers/onboard</code> &mdash; previously wired on the backend but unused by this app. It supports both of the ways that endpoint takes input: upload a <code>tenant.json</code> file (a single customer object, or a JSON array to onboard several in one go), or enter a customer's id, name, sector, service tier and branches by hand. Creating an org via the simpler <code>POST /tenants</code> (name + slug only, on the Tenants screen's "Create organization" dialog) still has no file upload &mdash; that's a separate, narrower endpoint and is unaffected by this change.</p>
+    </div>
+
+    <h3>Process / cleanup</h3>
+    <ul class="plain">
+      <li>Portal Users still shows mock data to real tenants in production &mdash; needs the same "coming soon" treatment the other mock portal screens already got.</li>
+      <li>Several throwaway test organizations from different rounds of testing need deleting on the backend (the frontend has no <code>DELETE</code> on cases/orgs to do it itself).</li>
+      <li>No staff/analyst-level test login exists right now &mdash; the one account available is a real <code>tenant_admin</code> and correctly gets <code>403</code>'d on every analyst/admin route. That's meant the newest screens (Customers, the Triage Queue's customer filter) could only be verified structurally, not against real populated data. A dedicated staff test account would unblock that.</li>
+    </ul>
+  </section>
+
+  <section id="tenant-bug">
+    <div class="sec-head">
+      <div class="sec-num">04</div>
+      <h2>Active issue: wrong default organization on login</h2>
+      <p class="sec-dek">Reported this week: a staff admin logs in and the organization shown active isn't their own, until they manually switch to it.</p>
+    </div>
+
+    <div class="issue new">
+      <div class="head"><strong>Confirmed backend-side, not a frontend bug</strong><span class="pill new">investigating</span></div>
+      <p>Checked the raw <code>GET /me</code> response directly &mdash; the backend itself reports the wrong tenant as active, before the frontend touches it. The UI's org switcher reads that field directly and displays it faithfully; there's no caching or stale-read path in front of it that could be the cause.</p>
+      <p>The backend treats "active tenant" as a sticky pointer on the account, not something recalculated at login. Whichever tenant was last switched into in a previous session stays active on every future login, rather than resetting to the account's own organization. Confirmed live: switching tenants, logging out, and logging back in on a different test account correctly reset to that account's home org &mdash; so the mechanism works, it's specifically this account's stored state that's pointed at the wrong place, almost certainly left over from an earlier cross-tenant investigation.</p>
+      <div class="label">Fix now</div>
+      <p style="margin-bottom:0">Switch into the correct organization once, from the org switcher. That updates the backend's stored pointer and future logins should default there.</p>
+      <div class="label">Fix for good</div>
+      <p style="margin-bottom:0">Needs the backend to track an actual "home" organization per account and reset to it on every login, regardless of switch history. There's no such signal in the API today to build a frontend workaround on.</p>
+    </div>
+  </section>
+
+  <section id="security">
+    <div class="sec-head">
+      <div class="sec-num">05</div>
+      <h2>Security notes</h2>
+      <p class="sec-dek">What's been checked and where things stand on the items that matter most.</p>
+    </div>
+
+    <div class="issue ok">
+      <div class="head"><strong>Cross-tenant data isolation</strong><span class="pill ok">re-tested, holding</span></div>
+      <p>The original finding &mdash; an unrelated organization's token able to read another real customer's cases, devices and metrics &mdash; no longer reproduces. Re-tested from scratch with two brand-new, mutually unrelated test organizations: direct reads of <code>/cases</code>, <code>/endpoints</code>, <code>/metrics/overview</code>, <code>/alerts</code> and <code>/fleet/devices</code> all came back correctly scoped and empty, not another org's data. Also checked two vectors the original finding didn't cover &mdash; switching into a tenant you're not a member of, and direct-ID access to another tenant's fleet tokens &mdash; both correctly refused.</p>
+      <p style="margin-bottom:0">One lower-severity item remains open: <code>GET /dashboard/kpis/</code> returns an unassigned-alert count that's identical across every account tested, including a brand-new one. Looks like a shared/global queue rather than leaked customer data, but worth a direct backend confirmation rather than treating it as closed on a one-sided retest.</p>
+    </div>
+
+    <div class="issue ok">
+      <div class="head"><strong>Role &amp; tier enforcement</strong><span class="pill ok">now real</span></div>
+      <p style="margin-bottom:0">Used to be a frontend-only guess with no server-side backing. The backend now returns <code>role</code>/<code>tier</code>/<code>user_type</code> directly on <code>GET /me</code> and enforces it server-side &mdash; a tenant token now gets a genuine <code>403</code> on analyst routes, confirmed live.</p>
+    </div>
+  </section>
+
+  <section id="environment">
+    <div class="sec-head">
+      <div class="sec-num">06</div>
+      <h2>Branches &amp; environment</h2>
+    </div>
+
+    <ul class="plain">
+      <li><strong>main</strong> is the canonical branch &mdash; the full build (all 25 screens) plus the client-onboarding addendum. Everything in this report describes <code>main</code>.</li>
+      <li><strong>dev</strong> is a safety snapshot taken mid-build, kept as a known-good fallback. It predates the addendum work (Customers, Accept Invite, the Triage Queue/Case Workspace/Devices changes), so it's now behind <code>main</code> &mdash; treat <code>main</code> as the one to build on.</li>
+      <li>Production build (<code>next build</code>) is clean on the full route tree. An earlier Turbopack font-resolution bug only showed up against a temporarily smaller route set during a branch experiment and hasn't recurred since the full build came back.</li>
+      <li>Dependencies current as of this update: Next.js 16.3.8, React 19, plus the usual security/patch bumps.</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>iRES &middot; internal engineering status</span>
+    <span>Questions &rarr; ask in the usual channel</span>
+  </div>
+</footer>

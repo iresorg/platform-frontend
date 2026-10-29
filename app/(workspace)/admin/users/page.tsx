@@ -7,6 +7,7 @@ import { ScrollText } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { MembersPanel } from "@/components/team/members-panel";
 import { RolesPanel } from "@/components/team/roles-panel";
+import { StaffPanel } from "@/components/team/staff-panel";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { RelativeTime } from "@/components/shared/relative-time";
 import { useCan } from "@/hooks/use-can";
@@ -14,7 +15,7 @@ import { useAuditLogsQuery } from "@/lib/audit/queries";
 import type { AuditLogEntry } from "@/lib/audit/types";
 import { cn } from "cn";
 
-type Tab = "users" | "roles" | "audit";
+type Tab = "users" | "roles" | "staff" | "audit";
 
 function AuditTab() {
   const { data: logs, isLoading, error } = useAuditLogsQuery();
@@ -44,12 +45,15 @@ function AuditTab() {
 export default function AdminUsersPage() {
   const { user } = useAuth();
   const can = useCan();
-  const [tab, setTab] = useState<Tab>(can("user.manage") ? "users" : "audit");
   const tenantId = user?.customer_id;
+  // Users and Roles are per-tenant; Staff isn't, so it's where an admin
+  // with no active tenant starts.
+  const [tab, setTab] = useState<Tab>(can("user.manage") ? (tenantId ? "users" : "staff") : "audit");
 
   const tabs: { id: Tab; label: string; show: boolean }[] = [
-    { id: "users", label: "Users", show: can("user.manage") },
-    { id: "roles", label: "Roles", show: can("user.manage") },
+    { id: "users", label: "Users", show: can("user.manage") && Boolean(tenantId) },
+    { id: "roles", label: "Roles", show: can("user.manage") && Boolean(tenantId) },
+    { id: "staff", label: "Staff", show: can("user.manage") },
     { id: "audit", label: "Audit", show: can("audit.read") },
   ];
   const visible = tabs.filter((t) => t.show);
@@ -86,6 +90,7 @@ export default function AdminUsersPage() {
 
       {tab === "users" && can("user.manage") && tenantId && <MembersPanel tenantId={tenantId} />}
       {tab === "roles" && can("user.manage") && tenantId && <RolesPanel tenantId={tenantId} />}
+      {tab === "staff" && can("user.manage") && <StaffPanel />}
       {tab === "audit" && can("audit.read") && <AuditTab />}
     </div>
     </RequirePermission>

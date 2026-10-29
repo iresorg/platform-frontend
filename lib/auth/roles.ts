@@ -19,3 +19,13 @@ export function roleHome(role: UserRole): string {
       return "/cases";
   }
 }
+
+// Where an account with no active tenant goes instead of roleHome(): an
+// admin (who can onboard) straight to the Customers screen with the
+// onboarding dialog open; everyone else to a page explaining it.
+export const ONBOARD_TENANT_PATH = "/customers?onboard=1";
+export const NO_ORGANIZATION_PATH = "/no-organization";
+
+// Staff routes an admin with no tenant may still use — onboarding a
+// customer, and managing staff (which isn't tenant-scoped).
+export const TENANTLESS_ADMIN_PREFIXES = ["/customers", "/admin"];

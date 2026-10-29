@@ -13,6 +13,7 @@ export type IncidentSourceType =
   | "ALERT_ESCALATION"
   | "VULNERABILITY"
   | "ENRICHMENT_REVIEW"
+  | "ONBOARDING_FAILURE"
   | "MANUAL";
 
 export type IncidentSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
@@ -180,6 +181,14 @@ export interface IncidentStats {
   resolved_incidents: number;
   closed_incidents: number;
   visibility_drop_incidents: number;
+  // Same counts under the backend's newer "cases" naming, returned
+  // alongside the *_incidents keys.
+  total_cases?: number;
+  open_cases?: number;
+  investigating_cases?: number;
+  resolved_cases?: number;
+  closed_cases?: number;
+  visibility_drop_cases?: number;
 }
 
 export interface CreateIncidentPayload {
@@ -191,21 +200,14 @@ export interface CreateIncidentPayload {
   agent_name: string;
 }
 
+// PATCH /cases/{id}/ only accepts these fields per the live spec (29 Oct)
+// — everything else on a case is read-only from here.
 export interface UpdateIncidentPayload {
-  title?: string;
-  summary?: string;
-  source_type?: IncidentSourceType;
-  severity?: IncidentSeverity;
   status?: IncidentStatus;
-  agent_id?: string;
-  agent_name?: string;
-  rule_id?: string;
-  dedupe_key?: string;
-  occurrence_count?: number;
-  intel_score?: number;
-  event_time?: string | null;
-  last_seen_at?: string | null;
-  sla_due_at?: string | null;
+  severity?: IncidentSeverity;
+  verdict?: CaseVerdict;
+  resolution_summary?: string;
+  customer_guidance?: string;
 }
 
 export interface AddNotePayload {
@@ -233,7 +235,11 @@ export interface IncidentFilters {
   // client-side only, same pattern as the Unassigned/Near SLA tiles.
   customer_id?: string;
   exclude_test?: boolean;
+  sort?: IncidentSort;
 }
+
+// GET /cases/ ?sort= — a leading "-" reverses the order.
+export type IncidentSort = "sla_due" | "-sla_due" | "created" | "-created" | "severity" | "-severity";
 
 // GET /cases/{id}/timeline/ — other Wazuh events on the same endpoint (or
 // the whole customer) around the case's event_time.

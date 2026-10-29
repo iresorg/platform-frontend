@@ -2,22 +2,57 @@
 
 import { RequirePermission } from "@/components/auth/require-permission";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Building2, Plus } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/components/auth/auth-provider";
 import { OnboardCustomerDialog } from "@/components/customers/onboard-customer-dialog";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { TestBadge } from "@/components/shared/test-badge";
 import { Button } from "@/components/ui/button";
+import { useTenantSwitch } from "@/components/tenants/use-tenant-switch";
 import { useCan } from "@/hooks/use-can";
+import { roleHome } from "@/lib/auth/roles";
 import { useCustomersQuery } from "@/lib/customers/queries";
-import type { AdminCustomerList } from "@/lib/customers/types";
+import type { AdminCustomerList, AdminCustomerOnboardItem } from "@/lib/customers/types";
+import { getMyTenants } from "@/lib/tenants/api";
 
-export default function CustomersPage() {
+function CustomersScreen() {
   const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
   const can = useCan();
-  const [onboardOpen, setOnboardOpen] = useState(false);
+  const { user } = useAuth();
+  const { switchTo } = useTenantSwitch();
+  // ?onboard=1 is where RequireTenant sends an admin with no tenant.
+  const [onboardOpen, setOnboardOpen] = useState(() => params.get("onboard") === "1" && can("customer.manage"));
   const { data: customers, isLoading, isError, error } = useCustomersQuery();
+  const noTenant = Boolean(user && !user.customer_id);
+
+  function handleOpenChange(open: boolean) {
+    setOnboardOpen(open);
+    if (!open && params.get("onboard")) router.replace(pathname);
+  }
+
+  // A tenantless admin is switched into the customer they just onboarded,
+  // so the rest of the workspace has a tenant to scope to. Onboarding's
+  // customer_id may be the tenant's id or its slug, so match either.
+  async function handleOnboarded(items: AdminCustomerOnboardItem[]) {
+    if (!user || user.customer_id || items.length === 0) return;
+    try {
+      const tenants = await getMyTenants();
+      const ids = new Set(items.map((i) => i.customer_id));
+      const match = tenants.find((t) => ids.has(t.id) || ids.has(t.slug));
+      if (!match) {
+        toast.info("Customer onboarded, but your account isn't a member of it yet, so there's no organization to switch into.");
+        return;
+      }
+      if (await switchTo(match.id)) router.replace(roleHome(user.role));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't load your organizations.");
+    }
+  }
 
   const columns: DataTableColumn<AdminCustomerList>[] = [
     {
@@ -51,7 +86,13 @@ export default function CustomersPage() {
         )}
       </div>
 
-      <OnboardCustomerDialog open={onboardOpen} onOpenChange={setOnboardOpen} />
+      {noTenant && (
+        <p role="status" className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+          Your account isn&rsquo;t working in an organization yet. Onboard a customer to get started.
+        </p>
+      )}
+
+      <OnboardCustomerDialog open={onboardOpen} onOpenChange={handleOpenChange} onOnboarded={handleOnboarded} />
 
       <DataTable
         columns={columns}
@@ -66,5 +107,13 @@ export default function CustomersPage() {
       />
     </div>
     </RequirePermission>
+  );
+}
+
+export default function CustomersPage() {
+  return (
+    <Suspense>
+      <CustomersScreen />
+    </Suspense>
   );
 }

@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api-error";
 import { useOnboardCustomerMutation } from "@/lib/customers/queries";
-import type { AdminCustomerOnboardPayload } from "@/lib/customers/types";
+import type { AdminCustomerOnboardItem, AdminCustomerOnboardPayload } from "@/lib/customers/types";
 
 const branchSchema = z.object({
   name: z.string().trim().min(1, "Required."),
@@ -54,9 +54,12 @@ function looksLikeOnboardPayload(v: unknown): v is AdminCustomerOnboardPayload {
 export function OnboardCustomerDialog({
   open,
   onOpenChange,
+  onOnboarded,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  // Every customer onboarded by one submit (one, or several from a file).
+  onOnboarded?: (items: AdminCustomerOnboardItem[]) => void;
 }) {
   const onboardMutation = useOnboardCustomerMutation();
   const [mode, setMode] = useState<"manual" | "file">("manual");
@@ -102,6 +105,7 @@ export function OnboardCustomerDialog({
           : "Onboarded."
       );
       closeAndReset();
+      onOnboarded?.(result.items);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Couldn't onboard that customer.");
     }
@@ -129,9 +133,11 @@ export function OnboardCustomerDialog({
 
       let onboarded = 0;
       let failed = 0;
+      const items: AdminCustomerOnboardItem[] = [];
       for (const payload of payloads) {
         try {
-          await onboardMutation.mutateAsync(payload);
+          const result = await onboardMutation.mutateAsync(payload);
+          items.push(...result.items);
           onboarded += 1;
         } catch {
           failed += 1;
@@ -145,6 +151,7 @@ export function OnboardCustomerDialog({
             (skipped ? ` ${skipped} skipped (missing required fields).` : "")
         );
         closeAndReset();
+        onOnboarded?.(items);
       } else {
         toast.error("None of the entries in that file could be onboarded.");
       }

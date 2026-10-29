@@ -26,7 +26,7 @@ export interface LoginData {
     first_name: string;
     last_name: string;
   };
-  active_tenant?: { id: string; name: string; slug: string };
+  active_tenant?: { id: string; name: string; slug: string } | null;
 }
 
 export interface MessageResponse {

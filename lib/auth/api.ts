@@ -51,8 +51,8 @@ export function mapMe(me: MeResponse): AuthUser {
     name,
     email: user.email,
     role: role as UserRole,
-    customer_id: active_tenant.id,
-    tenant_name: active_tenant.name,
+    customer_id: active_tenant?.id,
+    tenant_name: active_tenant?.name,
     permissions,
   };
 }

@@ -15,7 +15,7 @@ import { useNow } from "@/hooks/use-now";
 import { useCustomersQuery } from "@/lib/customers/queries";
 import { useMetricsOverviewQuery } from "@/lib/metrics/queries";
 import { useIncidentsQuery } from "@/lib/incidents/queries";
-import type { IncidentSeverity, IncidentStatus } from "@/lib/incidents/types";
+import type { IncidentSeverity, IncidentSort, IncidentStatus } from "@/lib/incidents/types";
 
 const PAGE_SIZE = 25;
 const FIFTEEN_MIN = 15 * 60_000;
@@ -35,6 +35,17 @@ const SEVERITY_OPTIONS: { value: string; label: string }[] = [
   { value: "LOW", label: "Low" },
 ];
 
+// "default" leaves ?sort= off, so the backend's own most-urgent-first
+// ordering applies.
+const SORT_OPTIONS: { value: IncidentSort | "default"; label: string }[] = [
+  { value: "default", label: "Most urgent first" },
+  { value: "sla_due", label: "SLA due soonest" },
+  { value: "-created", label: "Newest first" },
+  { value: "created", label: "Oldest first" },
+  { value: "-severity", label: "Highest severity" },
+  { value: "severity", label: "Lowest severity" },
+];
+
 function QueueContent() {
   const router = useRouter();
   const pathname = usePathname();
@@ -51,6 +62,7 @@ function QueueContent() {
   const customerId = params.get("customer_id") ?? undefined;
   // Defaults to off, per the addendum.
   const excludeTest = params.get("exclude_test") === "true";
+  const sort = (params.get("sort") as IncidentSort | null) ?? undefined;
 
   // Filters live in the URL so a filtered view survives a refresh and can be
   // sent to a colleague. Changing any filter returns to page one.
@@ -72,8 +84,9 @@ function QueueContent() {
     page,
     page_size: PAGE_SIZE,
     customer_id: customerId,
+    sort,
   });
-  const { data: metrics, isLoading: metricsLoading } = useMetricsOverviewQuery();
+  const { data: metrics, isLoading: metricsLoading } = useMetricsOverviewQuery(customerId);
   const { user } = useAuth();
   const { data: customers } = useCustomersQuery();
   // The case object still carries no customer_id/customer_name of its
@@ -137,7 +150,7 @@ function QueueContent() {
       </div>
 
       <MetricsBar metrics={metrics} loading={metricsLoading} active={activeTile} onSelect={onSelectTile} />
-      <ChartsRow />
+      <ChartsRow customerId={customerId} />
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3 shadow-sm">
         <Select value={status ?? "all"} onValueChange={(v) => setParams({ status: v === "all" ? null : v })}>
@@ -168,6 +181,16 @@ function QueueContent() {
             <SelectItem value="all">All customers</SelectItem>
             {customers?.map((c) => (
               <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={sort ?? "default"} onValueChange={(v) => setParams({ sort: v === "default" ? null : v })}>
+          <SelectTrigger size="sm" aria-label="Sort cases">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>

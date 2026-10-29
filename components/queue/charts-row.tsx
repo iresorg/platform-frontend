@@ -51,14 +51,16 @@ function formatDay(iso: string): string {
 // Every figure comes from a server-side aggregate — /metrics/* hits
 // Postgres directly — never summed across paginated /cases pages, which
 // would quietly count one page.
-export function ChartsRow() {
+// customerId narrows the /metrics/* figures to one customer, matching the
+// queue's customer filter.
+export function ChartsRow({ customerId }: { customerId?: string } = {}) {
   const stored = useSyncExternalStore(subscribe, readCollapsed, () => false);
   const [override, setOverride] = useState<boolean | null>(null);
   const collapsed = override ?? stored;
-  const { data: metrics, isLoading: metricsLoading } = useMetricsOverviewQuery();
+  const { data: metrics, isLoading: metricsLoading } = useMetricsOverviewQuery(customerId);
   const { data: posture, isLoading: postureLoading } = useVulnerabilityPostureQuery();
-  const { data: trend, isLoading: trendLoading } = useMetricsTrendQuery(7);
-  const { data: topEndpoints, isLoading: topLoading } = useMetricsTopEndpointsQuery(5);
+  const { data: trend, isLoading: trendLoading } = useMetricsTrendQuery(7, customerId);
+  const { data: topEndpoints, isLoading: topLoading } = useMetricsTopEndpointsQuery(5, customerId);
 
   function toggle() {
     const next = !collapsed;

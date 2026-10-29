@@ -44,7 +44,10 @@ export interface MeResponse {
     mfa_enabled: boolean;
     created_at: string;
   };
-  active_tenant: Tenant;
+  // null when the account has no tenant yet (a staff account not added to
+  // any tenant, a registration without organization_name, a removed
+  // member) — see components/auth/require-tenant.tsx for where that lands.
+  active_tenant: Tenant | null;
   tenants: Tenant[];
   // Permission codes granted in the active tenant.
   permissions: string[];

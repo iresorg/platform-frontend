@@ -11,7 +11,7 @@ const ANALYST_ROUTE_PREFIXES = [
 ];
 const CUSTOMER_ROUTE_PREFIXES = ["/portal"];
 // Any signed-in role may use these (role checks stay on the client).
-const SHARED_ROUTE_PREFIXES = ["/settings"];
+const SHARED_ROUTE_PREFIXES = ["/settings", "/no-organization"];
 
 // Optimistic checks only — this reads a non-sensitive role cookie to
 // pre-filter obviously unauthorized navigations. The bearer token that

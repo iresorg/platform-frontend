@@ -2,7 +2,7 @@
 
 import { RequirePermission } from "@/components/auth/require-permission";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Building2, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import { roleHome } from "@/lib/auth/roles";
 import { useCustomersQuery } from "@/lib/customers/queries";
 import type { AdminCustomerList, AdminCustomerOnboardItem } from "@/lib/customers/types";
 import { getMyTenants } from "@/lib/tenants/api";
+import { useMyTenantsQuery } from "@/lib/tenants/queries";
 
 function CustomersScreen() {
   const router = useRouter();
@@ -24,11 +25,23 @@ function CustomersScreen() {
   const params = useSearchParams();
   const can = useCan();
   const { user } = useAuth();
-  const { switchTo } = useTenantSwitch();
+  const { switchTo, isSwitching } = useTenantSwitch();
   // ?onboard=1 is where RequireTenant sends an admin with no tenant.
   const [onboardOpen, setOnboardOpen] = useState(() => params.get("onboard") === "1" && can("customer.manage"));
   const { data: customers, isLoading, isError, error } = useCustomersQuery();
   const noTenant = Boolean(user && !user.customer_id);
+  const { data: myTenants } = useMyTenantsQuery();
+
+  // ?onboard=1 is only for an account with no tenant; the session refresh
+  // can reveal it has one by now.
+  const onboardParam = params.get("onboard");
+  useEffect(() => {
+    if (onboardParam && user?.customer_id) router.replace(roleHome(user.role));
+  }, [onboardParam, user, router]);
+
+  async function continueIn(tenantId: string) {
+    if (user && (await switchTo(tenantId))) router.replace(roleHome(user.role));
+  }
 
   function handleOpenChange(open: boolean) {
     setOnboardOpen(open);
@@ -87,9 +100,17 @@ function CustomersScreen() {
       </div>
 
       {noTenant && (
-        <p role="status" className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
-          Your account isn&rsquo;t working in an organization yet. Onboard a customer to get started.
-        </p>
+        <div role="status" className="flex flex-wrap items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+          <p>
+            Your account isn&rsquo;t working in an organization yet. Onboard a customer to get started
+            {myTenants?.length ? ", or continue in one you already belong to:" : "."}
+          </p>
+          {myTenants?.map((t) => (
+            <Button key={t.id} size="sm" variant="outline" disabled={isSwitching} onClick={() => void continueIn(t.id)}>
+              {t.name}
+            </Button>
+          ))}
+        </div>
       )}
 
       <OnboardCustomerDialog open={onboardOpen} onOpenChange={handleOpenChange} onOnboarded={handleOnboarded} />

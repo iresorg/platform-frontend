@@ -10,6 +10,10 @@ export type UserRole = "tier1" | "tier2" | "admin" | "tenant_user" | "tenant_adm
 export const STAFF_ROLES: UserRole[] = ["tier1", "tier2", "admin"];
 export const TENANT_ROLES: UserRole[] = ["tenant_user", "tenant_admin"];
 
+export function isUserRole(value: unknown): value is UserRole {
+  return STAFF_ROLES.includes(value as UserRole) || TENANT_ROLES.includes(value as UserRole);
+}
+
 export function isStaffRole(role: UserRole): boolean {
   return STAFF_ROLES.includes(role);
 }

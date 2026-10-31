@@ -5,6 +5,7 @@ import { realLogin, verifyMfa } from "@/lib/auth/real-api";
 import type { LoginData } from "@/lib/auth/real-types";
 import { getMe } from "@/lib/tenants/api";
 import type { MeResponse } from "@/lib/tenants/types";
+import { isUserRole, STAFF_ROLES, TENANT_ROLES } from "@/lib/auth/types";
 import type { AuthUser, LoginCredentials, LoginResult, UserRole } from "@/lib/auth/types";
 
 const MOCK_LATENCY_MS = 500;
@@ -43,14 +44,32 @@ export class MfaRequiredError extends Error {
   }
 }
 
+// tier decides for staff: it's their platform level, whereas role can
+// reflect the tenant they're switched into. An account matching nothing is
+// refused rather than guessed at, since every route guard and permission
+// check keys off this value.
+function resolveRole({ role, tier, user_type }: MeResponse): UserRole {
+  const normalizedTier = tier?.trim().toLowerCase();
+  const normalizedRole = role?.trim().toLowerCase();
+  const isStaff = user_type === "staff" || Boolean(normalizedTier);
+  const candidate = isStaff ? (normalizedTier ?? normalizedRole) : normalizedRole;
+  if (isUserRole(candidate) && (isStaff ? STAFF_ROLES : TENANT_ROLES).includes(candidate)) {
+    return candidate;
+  }
+  throw new ApiError(
+    `This account's role (${role || "none"}) isn't recognized, so it can't be signed in. Contact an iRES administrator.`,
+    403
+  );
+}
+
 export function mapMe(me: MeResponse): AuthUser {
-  const { user, active_tenant, permissions, role } = me;
+  const { user, active_tenant, permissions } = me;
   const name = `${user.first_name} ${user.last_name}`.trim() || user.email;
   return {
     id: user.id,
     name,
     email: user.email,
-    role: role as UserRole,
+    role: resolveRole(me),
     customer_id: active_tenant?.id,
     tenant_name: active_tenant?.name,
     permissions,

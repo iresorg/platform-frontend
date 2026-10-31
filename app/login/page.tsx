@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,7 +17,7 @@ import { AppLoadingScreen } from "@/components/shared/app-loading-screen";
 import { USE_MOCK_AUTH } from "@/lib/config";
 import { mockAccounts } from "@/lib/auth/mock-users";
 import { MfaRequiredError } from "@/lib/auth/api";
-import { roleHome } from "@/lib/auth/roles";
+import { roleHome, safeRedirectPath } from "@/lib/auth/roles";
 import { ApiError } from "@/lib/api-error";
 
 const loginSchema = z.object({
@@ -33,7 +33,7 @@ const DESCRIPTION =
   "One case pipeline connecting live security detections and OpenCTI intelligence — full context for analysts inside, plain-language updates for clients outside.";
 
 function LoginForm() {
-  const { login } = useAuth();
+  const { login, user: signedInUser } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formError, setFormError] = useState<string | null>(null);
@@ -52,12 +52,16 @@ function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
+  // Already signed in, e.g. proxy.ts sent them here because the role cookie
+  // expired before the stored session did.
+  useEffect(() => {
+    if (signedInUser) router.replace(safeRedirectPath(searchParams.get("from")) ?? roleHome(signedInUser.role));
+  }, [signedInUser, router, searchParams]);
+
   async function onSubmit(values: LoginFormValues) {
     setFormError(null);
     try {
-      const user = await login(values);
-      const from = searchParams.get("from");
-      router.replace(from && from.startsWith("/") ? from : roleHome(user.role));
+      goHome(await login(values));
     } catch (err) {
       if (err instanceof MfaRequiredError) {
         setMfaChallenge(err.challengeToken);
@@ -72,8 +76,7 @@ function LoginForm() {
   }
 
   function goHome(user: { role: import("@/lib/auth/types").UserRole }) {
-    const from = searchParams.get("from");
-    router.replace(from && from.startsWith("/") ? from : roleHome(user.role));
+    router.replace(safeRedirectPath(searchParams.get("from")) ?? roleHome(user.role));
   }
 
   if (mfaChallenge !== null) {

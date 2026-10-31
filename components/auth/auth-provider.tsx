@@ -14,6 +14,7 @@ import { realLogout } from "@/lib/auth/real-api";
 import { clearAuth, getStoredToken, getStoredUser, storeAuth } from "@/lib/auth/storage";
 import { getMe } from "@/lib/tenants/api";
 import { USE_MOCK_AUTH } from "@/lib/config";
+import { isUserRole } from "@/lib/auth/types";
 import type { AuthUser, LoginCredentials } from "@/lib/auth/types";
 
 interface AuthContextValue {
@@ -42,9 +43,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // One-time hydration-safe read of localStorage: server and first client
     // render must agree (both render signed-out), so this can only run
     // after mount, not during the render that useState would give us.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUser(getStoredUser());
+    const token = getStoredToken();
+    const stored = getStoredUser();
+    if (!token || !stored || !isUserRole(stored.role)) {
+      // Also drops a leftover role cookie, which would otherwise have
+      // proxy.ts send /login straight back to a guard that sends it to /login.
+      clearAuth();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsLoading(false);
+      return;
+    }
+    // Re-writes the role cookie, which can have expired or disagree with
+    // the stored user.
+    storeAuth(token, stored);
+    setUser(stored);
     setIsLoading(false);
+    if (USE_MOCK_AUTH) return;
+
+    // The stored copy is only what was true at sign-in; tier, tenant and
+    // permissions can all have changed since. A failure keeps it: a dead
+    // token already signs out through ires:unauthorized.
+    getMe(token)
+      .then((me) => {
+        if (getStoredToken() !== token) return;
+        const refreshed: AuthUser = { ...mapMe(me), session_id: stored.session_id };
+        storeAuth(token, refreshed);
+        setUser(refreshed);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {

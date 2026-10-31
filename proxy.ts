@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { roleHome } from "@/lib/auth/roles";
-import type { UserRole as Role } from "@/lib/auth/types";
+import { roleHome, STAFF_ROUTE_PREFIXES } from "@/lib/auth/roles";
+import { isUserRole } from "@/lib/auth/types";
 
 const SESSION_COOKIE = "ires_session";
 const STAFF_ROLES = new Set(["tier1", "tier2", "admin"]);
-const ANALYST_ROUTE_PREFIXES = [
-  "/overview", "/alerts", "/cases", "/assets", "/fleet", "/vulnerabilities",
-  "/compliance", "/threat-intel", "/ai-review", "/tenants", "/reports", "/admin",
-];
 const CUSTOMER_ROUTE_PREFIXES = ["/portal"];
 // Any signed-in role may use these (role checks stay on the client).
 const SHARED_ROUTE_PREFIXES = ["/settings", "/no-organization"];
@@ -19,11 +15,12 @@ const SHARED_ROUTE_PREFIXES = ["/settings", "/no-organization"];
 // verified server-side on every request; see lib/http.ts.
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const role = request.cookies.get(SESSION_COOKIE)?.value as
-    | Role
-    | undefined;
+  // An unrecognised value counts as signed out: acting on it would bounce
+  // between roleHome() and the route guards forever.
+  const cookieRole = request.cookies.get(SESSION_COOKIE)?.value;
+  const role = isUserRole(cookieRole) ? cookieRole : undefined;
 
-  const isAnalystRoute = ANALYST_ROUTE_PREFIXES.some((p) =>
+  const isAnalystRoute = STAFF_ROUTE_PREFIXES.some((p) =>
     pathname.startsWith(p)
   );
   const isCustomerRoute = CUSTOMER_ROUTE_PREFIXES.some((p) =>

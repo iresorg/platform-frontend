@@ -5,22 +5,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth/auth-provider";
-import { roleHome } from "@/lib/auth/roles";
+import { roleHome, STAFF_ROUTE_PREFIXES } from "@/lib/auth/roles";
 import { isStaffRole } from "@/lib/auth/types";
 import { useSwitchTenantMutation } from "@/lib/tenants/queries";
-
-// Every top-level staff route — used to tell whether a just-switched-to
-// role belongs in this shell at all.
-const STAFF_ROUTE_PREFIXES = [
-  "/overview", "/alerts", "/cases", "/assets", "/fleet", "/vulnerabilities",
-  "/compliance", "/threat-intel", "/ai-review", "/tenants", "/reports", "/admin",
-];
 
 // Detail pages belong to one tenant's data — after switching they'd 404,
 // so fall back to their list page.
 const DETAIL_FALLBACKS: [string, string][] = [
   ["/cases/", "/cases"],
   ["/alerts/", "/alerts"],
+  ["/customers/", "/customers"],
   ["/tenants/", "/tenants"],
 ];
 

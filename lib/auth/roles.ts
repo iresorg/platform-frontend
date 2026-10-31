@@ -39,9 +39,9 @@ export function safeRedirectPath(from: string | null): string | null {
   }
 }
 
-// Where an account with no active tenant goes instead of roleHome(): an
-// admin (who can onboard) straight to the Customers screen with the
-// onboarding dialog open; everyone else to a page explaining it.
+// Where an account with no active tenant goes instead of roleHome(): a page
+// to pick a tenant it belongs to, or explaining it has none. An admin with
+// none goes on to the Customers screen with the onboarding dialog open.
 export const ONBOARD_TENANT_PATH = "/customers?onboard=1";
 export const NO_ORGANIZATION_PATH = "/no-organization";
 

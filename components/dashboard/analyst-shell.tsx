@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NoClientAccessBanner } from "@/components/tenants/no-client-access-banner";
 import { TenantSwitcher } from "@/components/tenants/tenant-switcher";
 import { UserMenu } from "@/components/user-menu";
 import { ReconnectBanner } from "@/components/shared/reconnect-banner";
@@ -202,6 +203,7 @@ export function AnalystShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <ReconnectBanner visible={isPollingDisconnected} />
+        <NoClientAccessBanner />
 
         <div id="main-content" className="flex flex-1 flex-col p-4 sm:p-6">
           <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4">

@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpCircle, FlaskConical, Search, X } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { CreateIncidentDialog } from "@/components/incidents/create-incident-dialog";
+import { useCanAct } from "@/hooks/use-can";
 import { ChartsRow } from "@/components/queue/charts-row";
 import { MetricsBar, type TileFilter } from "@/components/queue/metrics-bar";
 import { QueueTable } from "@/components/queue/queue-table";
@@ -88,6 +89,7 @@ function QueueContent() {
   });
   const { data: metrics, isLoading: metricsLoading } = useMetricsOverviewQuery(customerId);
   const { user } = useAuth();
+  const canAct = useCanAct();
   const { data: customers } = useCustomersQuery();
   // The case object still carries no customer_id/customer_name of its
   // own (see lib/incidents/types.ts) — when filtered, the name is
@@ -146,7 +148,7 @@ function QueueContent() {
           <h1 className="text-xl">Triage Queue</h1>
           <p className="text-sm text-muted-foreground">Every open case, most urgent first.</p>
         </div>
-        <CreateIncidentDialog />
+        {canAct("cases.create") && <CreateIncidentDialog />}
       </div>
 
       <MetricsBar metrics={metrics} loading={metricsLoading} active={activeTile} onSelect={onSelectTile} />

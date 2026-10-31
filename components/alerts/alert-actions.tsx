@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useCanAct } from "@/hooks/use-can";
 import { useTriageAlertMutation } from "@/lib/alerts/queries";
 import { ruleLevelToIncidentSeverity } from "@/lib/alerts/severity";
 import type { AlertDetail } from "@/lib/alerts/types";
@@ -147,6 +148,7 @@ function stringField(obj: Record<string, unknown> | null, key: string): string |
 export function AlertActions({ alert }: { alert: AlertDetail }) {
   const [active, setActive] = useState<TriageAction | null>(null);
   const current = alert.status.toUpperCase();
+  const canAct = useCanAct();
 
   const contextTitle = stringField(alert.threat_context, "title");
   const contextFile = stringField(alert.threat_context, "file");
@@ -161,7 +163,7 @@ export function AlertActions({ alert }: { alert: AlertDetail }) {
   return (
     <>
       <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Alert actions">
-        {TRIAGE_ACTIONS.filter((a) => a.status !== current).map((a) => {
+        {canAct("alerts.update") && TRIAGE_ACTIONS.filter((a) => a.status !== current).map((a) => {
           const Icon = a.icon;
           return (
             <Button key={a.status} variant="outline" onClick={() => setActive(a)}>
@@ -170,12 +172,14 @@ export function AlertActions({ alert }: { alert: AlertDetail }) {
             </Button>
           );
         })}
-        <EscalateDialog
-          alertId={alert.id}
-          defaultTitle={alert.rule_description}
-          defaultSeverity={ruleLevelToIncidentSeverity(alert.rule_level)}
-          defaultDescription={escalationDescription}
-        />
+        {canAct("incidents.create") && (
+          <EscalateDialog
+            alertId={alert.id}
+            defaultTitle={alert.rule_description}
+            defaultSeverity={ruleLevelToIncidentSeverity(alert.rule_level)}
+            defaultDescription={escalationDescription}
+          />
+        )}
       </div>
       <TriageActionDialog alertId={alert.id} action={active} onClose={() => setActive(null)} />
     </>

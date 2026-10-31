@@ -12,6 +12,19 @@ import { GUIDE_PERMISSION_KEYS, hasGuidePermission, type GuidePermissionKey } fr
 //    Roles still use these; the backend has real per-action codes there).
 // This only decides what to *show*. The backend enforces (or, for guide
 // keys that have no real backend split yet, doesn't — see the notice).
+// Whether to offer an action the backend gates on a raw code. An empty list
+// is treated as unknown rather than denied: GET /me reports [] for an admin
+// with no active tenant, and whether that changes after switching isn't
+// confirmed. The backend still enforces either way.
+export function useCanAct() {
+  const { user } = useAuth();
+  const permissions = user?.permissions;
+  return useCallback(
+    (code: string) => !permissions?.length || permissions.includes(code),
+    [permissions]
+  );
+}
+
 export function useCan() {
   const { user } = useAuth();
   const role = user?.role;

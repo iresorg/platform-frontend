@@ -17,7 +17,7 @@ import { roleHome } from "@/lib/auth/roles";
 import { useCustomersQuery } from "@/lib/customers/queries";
 import type { AdminCustomerList, AdminCustomerOnboardItem } from "@/lib/customers/types";
 import { getMyTenants } from "@/lib/tenants/api";
-import { useMyTenantsQuery } from "@/lib/tenants/queries";
+import { customerTenants, useMyTenantsQuery } from "@/lib/tenants/queries";
 
 function CustomersScreen() {
   const router = useRouter();
@@ -30,7 +30,8 @@ function CustomersScreen() {
   const [onboardOpen, setOnboardOpen] = useState(() => params.get("onboard") === "1" && can("customer.manage"));
   const { data: customers, isLoading, isError, error } = useCustomersQuery();
   const noTenant = Boolean(user && !user.customer_id);
-  const { data: myTenants } = useMyTenantsQuery();
+  const { data: allMyTenants } = useMyTenantsQuery();
+  const myTenants = allMyTenants && customerTenants(allMyTenants);
 
   // ?onboard=1 is only for an account with no tenant; the session refresh
   // can reveal it has one by now.

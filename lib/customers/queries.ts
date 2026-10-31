@@ -21,8 +21,8 @@ export const customerKeys = {
   users: (id: string) => ["customers", id, "users"] as const,
 };
 
-export function useCustomersQuery() {
-  return useQuery({ queryKey: customerKeys.list, queryFn: fetchCustomers, retry: false });
+export function useCustomersQuery(enabled = true) {
+  return useQuery({ queryKey: customerKeys.list, queryFn: fetchCustomers, enabled, retry: false });
 }
 
 export function useCustomerQuery(id: string | undefined) {

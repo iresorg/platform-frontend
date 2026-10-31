@@ -35,6 +35,15 @@ export function useMyTenantsQuery() {
   return useQuery({ queryKey: tenantKeys.mine, queryFn: getMyTenants, retry: false });
 }
 
+// The backend's holding tenant comes back in GET /me/tenants for platform
+// staff, but it isn't a customer, so it isn't offered as somewhere to work.
+const SYSTEM_TENANT_SLUG = "system-unassigned";
+export const SYSTEM_TENANT_NAME = "SYSTEM_UNASSIGNED";
+
+export function customerTenants<T extends { slug: string }>(tenants: T[]): T[] {
+  return tenants.filter((t) => t.slug !== SYSTEM_TENANT_SLUG);
+}
+
 export function useTenantQuery(id: string | undefined) {
   return useQuery({
     queryKey: tenantKeys.detail(id ?? ""),

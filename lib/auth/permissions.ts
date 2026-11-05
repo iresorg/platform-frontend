@@ -57,7 +57,7 @@ const GRANTED_TO: Record<GuidePermissionKey, UserRole[]> = {
   "case.assign_self": ALL_STAFF,
   "case.assign_other": TIER2_PLUS,
   "case.note": ALL_STAFF,
-  "case.escalate": ["tier1"],
+  "case.escalate": ["tier1", "admin"],
   "case.resolve_benign": ALL_STAFF,
   "case.resolve_tp": TIER2_PLUS,
   "alert.read": ALL_STAFF,

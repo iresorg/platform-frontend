@@ -117,8 +117,9 @@ export function ActionsCard({ incident }: { incident: Incident }) {
               <UserPlus aria-hidden="true" />
               {assignedToMe ? "Assigned to you" : assignMutation.isPending ? "Assigning..." : "Assign to me"}
             </Button>
-            {/* Guide A4/1.3: only Tier 1 escalates — Tier 2 is where
-                escalations land, so escalating further doesn't apply. */}
+            {/* Guide A4/1.3: Tier 1 escalates — Tier 2 is where escalations
+                land, so escalating further doesn't apply. Admin has full
+                access, confirmed by the backend team. */}
             <Can code="case.escalate">
               <Button variant="outline" size="sm" onClick={() => setEscalateOpen(true)}>
                 <ArrowUpCircle aria-hidden="true" />

@@ -1,5 +1,5 @@
 import { apiRequest } from "@/lib/http";
-import type { InviteStaffPayload, InviteStaffResponse, StaffUser, UpdateStaffPayload } from "@/lib/staff/types";
+import type { AssignedTenant, InviteStaffPayload, InviteStaffResponse, StaffUser, UpdateStaffPayload } from "@/lib/staff/types";
 
 // Admin only — anyone else gets a 403.
 
@@ -23,4 +23,16 @@ export async function updateStaff(userId: string, payload: UpdateStaffPayload): 
 
 export async function disableStaff(userId: string): Promise<StaffUser> {
   return apiRequest<StaffUser>(`/api/v1/admin/staff/${userId}/disable`, { method: "POST" });
+}
+
+export async function fetchStaffTenants(userId: string): Promise<AssignedTenant[]> {
+  return apiRequest<AssignedTenant[]>(`/api/v1/admin/staff/${userId}/tenants`);
+}
+
+// Replaces the whole set — anything left out is unassigned.
+export async function setStaffTenants(userId: string, tenantIds: string[]): Promise<AssignedTenant[]> {
+  return apiRequest<AssignedTenant[]>(`/api/v1/admin/staff/${userId}/tenants`, {
+    method: "PUT",
+    body: JSON.stringify({ tenant_ids: tenantIds }),
+  });
 }

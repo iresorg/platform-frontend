@@ -43,6 +43,10 @@ export function safeRedirectPath(from: string | null): string | null {
 // to pick a tenant it belongs to, or explaining it has none. An admin with
 // none goes on to the Customers screen with the onboarding dialog open.
 export const ONBOARD_TENANT_PATH = "/customers?onboard=1";
+// "Create organization" goes through onboarding for now, so a new organization
+// gets its customer record and branches. Unlike ?onboard=1, this one is for
+// accounts that already have a tenant.
+export const CREATE_ORGANIZATION_PATH = "/customers?onboard=create";
 export const NO_ORGANIZATION_PATH = "/no-organization";
 
 // Staff routes an admin with no tenant may still use — onboarding a

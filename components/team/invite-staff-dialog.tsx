@@ -7,6 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { SecretOnce } from "@/components/shared/secret-once";
+import { ClientChecklist } from "@/components/team/client-checklist";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,6 +38,7 @@ type Values = z.infer<typeof schema>;
 export function InviteStaffDialog() {
   const [open, setOpen] = useState(false);
   const [result, setResult] = useState<InviteStaffResponse | null>(null);
+  const [clientIds, setClientIds] = useState<string[]>([]);
   const invite = useInviteStaffMutation();
   const {
     register,
@@ -53,6 +55,7 @@ export function InviteStaffDialog() {
     setOpen(next);
     if (!next) {
       setResult(null);
+      setClientIds([]);
       reset();
     }
   }
@@ -65,6 +68,7 @@ export function InviteStaffDialog() {
         last_name: values.last_name || undefined,
         tier: values.tier,
         password: values.password || undefined,
+        tenant_ids: clientIds.length ? clientIds : undefined,
       });
       if (res.invite_url) {
         setResult(res);
@@ -147,6 +151,10 @@ export function InviteStaffDialog() {
                       </Select>
                     )}
                   />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label>Clients (optional)</Label>
+                  <ClientChecklist idPrefix="invite-client" value={clientIds} onChange={setClientIds} />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="staff-password">Password (optional)</Label>

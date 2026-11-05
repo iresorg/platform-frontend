@@ -28,6 +28,8 @@ function CustomersScreen() {
   const { switchTo, isSwitching } = useTenantSwitch();
   // ?onboard=1 is where RequireTenant sends an admin with no tenant.
   const [onboardOpen, setOnboardOpen] = useState(() => params.get("onboard") === "1" && can("customer.manage"));
+  // Derived, since Create organization can navigate here from this same page.
+  const dialogOpen = onboardOpen || (params.get("onboard") === "create" && can("customer.manage"));
   const { data: customers, isLoading, isError, error } = useCustomersQuery();
   const noTenant = Boolean(user && !user.customer_id);
   const { data: allMyTenants } = useMyTenantsQuery();
@@ -37,7 +39,7 @@ function CustomersScreen() {
   // can reveal it has one by now.
   const onboardParam = params.get("onboard");
   useEffect(() => {
-    if (onboardParam && user?.customer_id) router.replace(roleHome(user.role));
+    if (onboardParam === "1" && user?.customer_id) router.replace(roleHome(user.role));
   }, [onboardParam, user, router]);
 
   async function continueIn(tenantId: string) {
@@ -114,7 +116,7 @@ function CustomersScreen() {
         </div>
       )}
 
-      <OnboardCustomerDialog open={onboardOpen} onOpenChange={handleOpenChange} onOnboarded={handleOnboarded} />
+      <OnboardCustomerDialog open={dialogOpen} onOpenChange={handleOpenChange} onOnboarded={handleOnboarded} />
 
       <DataTable
         columns={columns}

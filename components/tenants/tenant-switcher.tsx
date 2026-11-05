@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Building2, Check, ChevronsUpDown, Plus } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
-import { CreateTenantDialog } from "@/components/tenants/create-tenant-dialog";
 import { useTenantSwitch } from "@/components/tenants/use-tenant-switch";
 import {
   DropdownMenu,
@@ -13,13 +12,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useCan } from "@/hooks/use-can";
+import { CREATE_ORGANIZATION_PATH } from "@/lib/auth/roles";
 import { useMyTenantsQuery } from "@/lib/tenants/queries";
 
 export function TenantSwitcher() {
   const { user } = useAuth();
   const { data: tenants, isLoading } = useMyTenantsQuery();
   const { switchTo, isSwitching } = useTenantSwitch();
-  const [createOpen, setCreateOpen] = useState(false);
+  const can = useCan();
+  const router = useRouter();
 
   if (!user?.customer_id) return null;
 
@@ -61,14 +63,17 @@ export function TenantSwitcher() {
               </DropdownMenuItem>
             );
           })}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => setCreateOpen(true)}>
-            <Plus aria-hidden="true" />
-            Create organization
-          </DropdownMenuItem>
+          {can("customer.manage") && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => router.push(CREATE_ORGANIZATION_PATH)}>
+                <Plus aria-hidden="true" />
+                Create organization
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
-      <CreateTenantDialog open={createOpen} onOpenChange={setCreateOpen} />
     </>
   );
 }

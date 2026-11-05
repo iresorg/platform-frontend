@@ -160,7 +160,8 @@ export function useAssignCaseMutation() {
 export function useEscalateCaseMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: string }) => escalateIncident(id, reason),
+    mutationFn: ({ id, reason, escalatedTo }: { id: string; reason: string; escalatedTo?: string }) =>
+      escalateIncident(id, reason, escalatedTo),
     onSuccess: (incident, { id }) => {
       queryClient.setQueryData<Incident>(incidentKeys.detail(id), incident);
       invalidateIncident(queryClient, id);

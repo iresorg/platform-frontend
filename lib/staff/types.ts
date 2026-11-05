@@ -15,6 +15,14 @@ export interface StaffUser {
   is_active: boolean;
   created_at: string;
   invited_date?: string | null;
+  // Client tenants this analyst can switch into and work on.
+  assigned_tenants?: AssignedTenant[];
+}
+
+export interface AssignedTenant {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 // Without a password the backend emails a 72-hour invite link; with one
@@ -25,6 +33,8 @@ export interface InviteStaffPayload {
   last_name?: string;
   tier?: StaffTier;
   password?: string;
+  // Tenant UUIDs or slugs.
+  tenant_ids?: string[];
 }
 
 export interface InviteStaffResponse {
@@ -39,9 +49,11 @@ export interface InviteStaffResponse {
   invite_url?: string;
   expires_at?: string;
   invited_date?: string;
+  assigned_tenants?: AssignedTenant[];
 }
 
 export interface UpdateStaffPayload {
   tier?: StaffTier;
   is_active?: boolean;
+  tenant_ids?: string[];
 }

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { NoClientAccessBanner } from "@/components/tenants/no-client-access-banner";
 import { TenantSwitcher } from "@/components/tenants/tenant-switcher";
 import { UserMenu } from "@/components/user-menu";
@@ -197,6 +198,7 @@ export function AnalystShell({ children }: { children: React.ReactNode }) {
             </div>
             <div className="ml-auto flex shrink-0 items-center gap-3 sm:gap-4">
               <ThemeToggle className="text-muted-foreground hover:bg-muted hover:text-foreground" />
+              <NotificationBell />
               <UserMenu subtitle={user ? (TIER_LABEL[user.role] ?? user.role) : undefined} />
             </div>
           </div>

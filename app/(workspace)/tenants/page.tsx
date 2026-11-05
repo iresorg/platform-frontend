@@ -2,20 +2,18 @@
 
 import { RequirePermission } from "@/components/auth/require-permission";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, Plus } from "lucide-react";
 import { Can } from "@/components/auth/can";
-import { CreateTenantDialog } from "@/components/tenants/create-tenant-dialog";
 import { DataTable, type DataTableColumn } from "@/components/shared/data-table";
 import { Button } from "@/components/ui/button";
+import { CREATE_ORGANIZATION_PATH } from "@/lib/auth/roles";
 import { useMyTenantsQuery } from "@/lib/tenants/queries";
 import type { Tenant } from "@/lib/tenants/types";
 
 export default function TenantsPage() {
   const router = useRouter();
   const { data: tenants, isLoading } = useMyTenantsQuery();
-  const [createOpen, setCreateOpen] = useState(false);
 
   const columns: DataTableColumn<Tenant>[] = [
     { key: "name", header: "Organization", render: (t) => <span className="font-medium">{t.name}</span> },
@@ -33,7 +31,7 @@ export default function TenantsPage() {
           <p className="text-sm text-muted-foreground">Every organization you have access to.</p>
         </div>
         <Can code="tenant.write">
-          <Button onClick={() => setCreateOpen(true)}><Plus aria-hidden="true" /> Create organization</Button>
+          <Button onClick={() => router.push(CREATE_ORGANIZATION_PATH)}><Plus aria-hidden="true" /> Create organization</Button>
         </Can>
       </div>
 
@@ -47,7 +45,6 @@ export default function TenantsPage() {
         emptyTitle="No organizations yet"
       />
 
-      <CreateTenantDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
     </RequirePermission>
   );

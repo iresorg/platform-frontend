@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { MoreHorizontal, UserCheck, UserX } from "lucide-react";
+import { Building2, MoreHorizontal, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth/auth-provider";
 import { InviteStaffDialog, TIER_LABELS } from "@/components/team/invite-staff-dialog";
+import { ManageClientsDialog } from "@/components/team/manage-clients-dialog";
 import { Button } from "@/components/ui/button";
 import { ColorBadge } from "@/components/ui/color-badge";
 import {
@@ -81,6 +82,7 @@ export function StaffPanel() {
   const { data: staff, isLoading, isError, error } = useStaffQuery();
   const update = useUpdateStaffMutation();
   const [disableTarget, setDisableTarget] = useState<StaffUser | null>(null);
+  const [clientsTarget, setClientsTarget] = useState<StaffUser | null>(null);
 
   async function changeTier(member: StaffUser, tier: StaffTier) {
     try {
@@ -112,6 +114,7 @@ export function StaffPanel() {
               <TableRow className="hover:bg-transparent">
                 <TableHead className={HEAD}>Staff member</TableHead>
                 <TableHead className={HEAD}>Tier</TableHead>
+                <TableHead className={HEAD}>Clients</TableHead>
                 <TableHead className={HEAD}>Status</TableHead>
                 <TableHead className={HEAD}>Added</TableHead>
                 <TableHead className={`${HEAD} w-10`} />
@@ -120,21 +123,21 @@ export function StaffPanel() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={5}>
+                  <TableCell colSpan={6}>
                     <Skeleton className="h-10 w-full" />
                   </TableCell>
                 </TableRow>
               )}
               {isError && (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-12 text-center text-sm text-destructive">
+                  <TableCell colSpan={6} className="py-12 text-center text-sm text-destructive">
                     Couldn&rsquo;t load staff{error instanceof Error ? `: ${error.message}` : "."}
                   </TableCell>
                 </TableRow>
               )}
               {staff?.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-12 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="py-12 text-center text-sm text-muted-foreground">
                     No staff yet.
                   </TableCell>
                 </TableRow>
@@ -152,6 +155,11 @@ export function StaffPanel() {
                       <p className="text-xs text-muted-foreground">{member.email}</p>
                     </TableCell>
                     <TableCell className="text-sm">{TIER_LABELS[member.tier] ?? member.role_name}</TableCell>
+                    <TableCell className="max-w-56 text-sm text-muted-foreground">
+                      {member.assigned_tenants?.length
+                        ? member.assigned_tenants.map((t) => t.name).join(", ")
+                        : "None"}
+                    </TableCell>
                     <TableCell>
                       <ColorBadge tone={STATUS_TONE[status] ?? "slate"} variant="outline">
                         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -180,6 +188,10 @@ export function StaffPanel() {
                               </DropdownMenuItem>
                             ))}
                             <DropdownMenuSeparator />
+                            <DropdownMenuItem onSelect={() => setClientsTarget(member)}>
+                              <Building2 aria-hidden="true" />
+                              Manage clients
+                            </DropdownMenuItem>
                             {member.is_active ? (
                               <DropdownMenuItem variant="destructive" onSelect={() => setDisableTarget(member)}>
                                 <UserX aria-hidden="true" />
@@ -202,6 +214,7 @@ export function StaffPanel() {
           </Table>
         </div>
       </div>
+      <ManageClientsDialog member={clientsTarget} onOpenChange={(o) => !o && setClientsTarget(null)} />
       <DisableStaffDialog member={disableTarget} onOpenChange={(o) => !o && setDisableTarget(null)} />
     </div>
   );

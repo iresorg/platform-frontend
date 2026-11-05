@@ -109,10 +109,12 @@ export async function assignIncident(id: string, userId?: string): Promise<Incid
 
 // Bumps the case to the next severity tier and marks it INVESTIGATING —
 // it does not add a distinct "escalated" status (there isn't one).
-export async function escalateIncident(id: string, reason: string): Promise<Incident> {
+// escalatedTo (a staff UUID or email) also assigns the case to them, and
+// they're notified.
+export async function escalateIncident(id: string, reason: string, escalatedTo?: string): Promise<Incident> {
   return apiRequest<Incident>(`/api/v1/incidents/${id}/escalate/`, {
     method: "POST",
-    body: JSON.stringify({ reason }),
+    body: JSON.stringify(escalatedTo ? { reason, escalated_to: escalatedTo } : { reason }),
   });
 }
 

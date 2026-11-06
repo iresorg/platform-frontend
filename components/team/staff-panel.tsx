@@ -155,7 +155,7 @@ export function StaffPanel() {
                       <p className="text-xs text-muted-foreground">{member.email}</p>
                     </TableCell>
                     <TableCell className="text-sm">{TIER_LABELS[member.tier] ?? member.role_name}</TableCell>
-                    <TableCell className="max-w-56 text-sm text-muted-foreground">
+                    <TableCell className="max-w-56 min-w-40 text-sm whitespace-normal break-words text-muted-foreground">
                       {member.assigned_tenants?.length
                         ? member.assigned_tenants.map((t) => t.name).join(", ")
                         : "None"}

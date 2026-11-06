@@ -14,16 +14,26 @@ import {
 } from "@/components/ui/dialog";
 import { useCustomersQuery } from "@/lib/customers/queries";
 import { useSetStaffTenantsMutation, useStaffTenantsQuery } from "@/lib/staff/queries";
+import type { AdminCustomerList } from "@/lib/customers/types";
 import type { AssignedTenant, StaffUser } from "@/lib/staff/types";
+
+// A customer's id is its tenant's UUID or its slug (the spec allows either),
+// while assigned tenants always carry both, so match on either.
+function isTenantOf(t: AssignedTenant, c: AdminCustomerList) {
+  return t.id === c.id || t.slug === c.id;
+}
 
 function ManageClientsForm({ member, assigned, onDone }: { member: StaffUser; assigned: AssignedTenant[]; onDone: () => void }) {
   const { data: customers } = useCustomersQuery();
   const save = useSetStaffTenantsMutation();
-  const clientIds = new Set(customers?.map((c) => c.id));
-  const [selected, setSelected] = useState(() => assigned.filter((t) => clientIds.has(t.id)).map((t) => t.id));
+  const clients = customers ?? [];
+  // The checklist works in customer ids, which the backend also accepts.
+  const [selected, setSelected] = useState(() =>
+    clients.filter((c) => assigned.some((t) => isTenantOf(t, c))).map((c) => c.id)
+  );
   // The set is replaced on save, so tenants that aren't clients (such as the
   // holding tenant) are sent back unchanged rather than dropped.
-  const kept = assigned.filter((t) => !clientIds.has(t.id));
+  const kept = assigned.filter((t) => !clients.some((c) => isTenantOf(t, c)));
 
   async function submit() {
     try {

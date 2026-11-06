@@ -169,30 +169,35 @@ export function StaffPanel() {
                       {new Date(member.invited_date ?? member.created_at).toLocaleDateString(undefined, { dateStyle: "medium" })}
                     </TableCell>
                     <TableCell>
-                      {!isYou && (
-                        <DropdownMenu>
+                      <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon-sm" aria-label={`Actions for ${member.name || member.email}`}>
                               <MoreHorizontal aria-hidden="true" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel className="text-xs text-muted-foreground">Change tier</DropdownMenuLabel>
-                            {(Object.keys(TIER_LABELS) as StaffTier[]).map((tier) => (
-                              <DropdownMenuItem
-                                key={tier}
-                                disabled={tier === member.tier || update.isPending}
-                                onSelect={() => void changeTier(member, tier)}
-                              >
-                                {TIER_LABELS[tier]}
-                              </DropdownMenuItem>
-                            ))}
-                            <DropdownMenuSeparator />
                             <DropdownMenuItem onSelect={() => setClientsTarget(member)}>
                               <Building2 aria-hidden="true" />
                               Manage clients
                             </DropdownMenuItem>
-                            {member.is_active ? (
+                            {/* Your own tier and access stay with another admin. */}
+                            {!isYou && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel className="text-xs text-muted-foreground">Change tier</DropdownMenuLabel>
+                                {(Object.keys(TIER_LABELS) as StaffTier[]).map((tier) => (
+                                  <DropdownMenuItem
+                                    key={tier}
+                                    disabled={tier === member.tier || update.isPending}
+                                    onSelect={() => void changeTier(member, tier)}
+                                  >
+                                    {TIER_LABELS[tier]}
+                                  </DropdownMenuItem>
+                                ))}
+                                <DropdownMenuSeparator />
+                              </>
+                            )}
+                            {isYou ? null : member.is_active ? (
                               <DropdownMenuItem variant="destructive" onSelect={() => setDisableTarget(member)}>
                                 <UserX aria-hidden="true" />
                                 Disable
@@ -205,7 +210,6 @@ export function StaffPanel() {
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      )}
                     </TableCell>
                   </TableRow>
                 );

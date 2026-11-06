@@ -3,8 +3,8 @@
 import { useCustomersQuery } from "@/lib/customers/queries";
 import { SYSTEM_TENANT_NAME } from "@/lib/tenants/queries";
 
-// Onboarded clients as checkboxes. A customer's id is its tenant's id, which
-// is what the staff tenant routes take.
+// Onboarded clients as checkboxes, keyed by customer id: the tenant's UUID or
+// slug, both of which the staff tenant routes accept.
 export function ClientChecklist({
   value,
   onChange,

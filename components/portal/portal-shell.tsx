@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ArrowLeft,
   BarChart3,
   FileBarChart,
   History,
@@ -42,8 +43,20 @@ const NAV_LINKS = [
 
 function SidebarNav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   const can = useCan();
+  const { user } = useAuth();
   return (
     <nav aria-label="Primary" className="flex flex-col gap-1 px-3 pb-3">
+      {/* Admin views the portal of the tenant it's switched into. */}
+      {user?.role === "admin" && (
+        <Link
+          href="/overview"
+          onClick={onNavigate}
+          className="mb-2 flex items-center gap-3 rounded-md border border-sidebar-border px-3 py-2 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent/60"
+        >
+          <ArrowLeft className="size-4 shrink-0" aria-hidden="true" />
+          Back to SOC workspace
+        </Link>
+      )}
       {NAV_LINKS.filter((l) => !l.permission || can(l.permission)).map((link) => {
         const Icon = link.icon;
         const active = link.match(pathname);

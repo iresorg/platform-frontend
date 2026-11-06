@@ -51,7 +51,7 @@ export function useTenantSwitch() {
         const home = roleHome(me.role);
         const inWrongShell =
           (!isStaffRole(me.role) && STAFF_ROUTE_PREFIXES.some((p) => pathname.startsWith(p))) ||
-          (isStaffRole(me.role) && pathname.startsWith("/portal"));
+          (isStaffRole(me.role) && me.role !== "admin" && pathname.startsWith("/portal"));
         const fallback = DETAIL_FALLBACKS.find(([prefix]) => pathname.startsWith(prefix));
         if (inWrongShell) router.replace(home);
         else if (fallback) router.replace(fallback[1]);

@@ -48,7 +48,10 @@ export type GuidePermissionKey =
 
 const ALL_STAFF: UserRole[] = ["tier1", "tier2", "admin"];
 const TIER2_PLUS: UserRole[] = ["tier2", "admin"];
-const BOTH_TENANT: UserRole[] = ["tenant_user", "tenant_admin"];
+// Admin has every permission (confirmed by the backend team), including
+// viewing a client's portal for the tenant it has switched into.
+const BOTH_TENANT: UserRole[] = ["tenant_user", "tenant_admin", "admin"];
+const TENANT_ADMIN: UserRole[] = ["tenant_admin", "admin"];
 
 // Table 1.3 and 1.4, transcribed directly — change this, not the call
 // sites, when Security tunes a boundary.
@@ -86,11 +89,11 @@ const GRANTED_TO: Record<GuidePermissionKey, UserRole[]> = {
   "user.manage": ["admin"],
   "portal.read": BOTH_TENANT,
   "portal.incident.ack": BOTH_TENANT,
-  "portal.devices.enrol": ["tenant_admin"],
-  "portal.compliance.read": ["tenant_admin"],
-  "portal.plan.complete": ["tenant_admin"],
-  "portal.report.read": ["tenant_admin"],
-  "portal.user.manage": ["tenant_admin"],
+  "portal.devices.enrol": TENANT_ADMIN,
+  "portal.compliance.read": TENANT_ADMIN,
+  "portal.plan.complete": TENANT_ADMIN,
+  "portal.report.read": TENANT_ADMIN,
+  "portal.user.manage": TENANT_ADMIN,
 };
 
 export const GUIDE_PERMISSION_KEYS = new Set(Object.keys(GRANTED_TO));

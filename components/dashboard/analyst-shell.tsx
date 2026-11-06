@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   AlertOctagon,
   Building2,
+  Eye,
   ClipboardList,
   FileBarChart,
   Gauge,
@@ -60,6 +61,7 @@ const ADMIN_NAV_LINKS = [
 ];
 
 const WORKSPACE_NAV_LINKS = [
+  { href: "/portal", label: "Client portal", icon: Eye, permission: "portal.read", match: (p: string) => p.startsWith("/portal") },
   { href: "/settings/team", label: "Team", icon: Users, permission: "members.view", match: (p: string) => p === "/settings/team" },
   { href: "/settings/account", label: "Account", icon: UserCog, match: (p: string) => p === "/settings/account" },
 ];

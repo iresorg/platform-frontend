@@ -47,7 +47,8 @@ export function proxy(request: NextRequest) {
   if (!isStaff && isAnalystRoute) {
     return NextResponse.redirect(new URL(roleHome(role), request.url));
   }
-  if (isStaff && isCustomerRoute) {
+  // Admin may also open the client portal.
+  if (isStaff && isCustomerRoute && role !== "admin") {
     return NextResponse.redirect(new URL(roleHome(role), request.url));
   }
 
